@@ -1,4 +1,4 @@
-import re, json, httpx, logging
+import re, json, httpx, logging, time
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse, RedirectResponse
@@ -6,11 +6,15 @@ from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse, Red
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="MovieBox API Pro", version="2.1.13")
+app = FastAPI(title="MovieBox API Pro", version="2.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 API_BASE = "https://h5-api.aoneroom.com/wefeed-h5api-bff"
 _bearer_token = None
+
+# Simple in‑memory cache for stream data (avoid flooding upstream)
+_stream_cache = {}          # key -> (data, domain, timestamp)
+CACHE_TTL = 15              # seconds
 
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
@@ -64,82 +68,65 @@ async def _req(url, method="GET", payload=None):
         return r.json()
 
 async def _get_stream_data(sid, slug, se=0, ep=0):
-    """Try multiple methods to get stream data - returns (data, domain)"""
-    
+    """Try multiple methods to get stream data – returns (data, domain)"""
+    cache_key = f"{sid}|{slug}|{se}|{ep}"
+    now = time.time()
+    if cache_key in _stream_cache:
+        data, domain, ts = _stream_cache[cache_key]
+        if now - ts < CACHE_TTL:
+            logger.info("Returning cached stream data")
+            return data, domain
+
     # Method 1: Get domain from API, then fetch stream
     try:
         dom = await _req(f"{API_BASE}/media-player/get-domain")
         domain = dom.get("data", "").rstrip("/") or "https://netfilm.world"
-        
         ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
         url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
-        
-        logger.info(f"Method 1: Trying {domain}")
+
         async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
             r = await c.get(url, headers={**PLAYER_HEADERS, "Referer": ref, "Origin": domain})
             data = r.json().get("data", {})
             if data.get("hasResource") and (data.get("streams") or data.get("dash")):
                 logger.info(f"Method 1 SUCCESS: {len(data.get('streams',[]))} MP4, {len(data.get('dash',[]))} DASH from {domain}")
+                _stream_cache[cache_key] = (data, domain, now)
                 return data, domain
-            else:
-                logger.warning(f"Method 1: has_resource={data.get('hasResource')}, streams={len(data.get('streams', []))}")
     except Exception as e:
         logger.error(f"Method 1 failed: {e}")
-    
-    # Method 2: Try netfilm.world directly
+
+    # Method 2: Try moviebox.ph domain
     try:
-        domain = "https://netfilm.world"
+        domain = "https://moviebox.ph"
         ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
-        url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
-        
-        logger.info(f"Method 2: Trying {domain}")
+        url = f"https://h5-api.aoneroom.com/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
+
         async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
             r = await c.get(url, headers={**PLAYER_HEADERS, "Referer": ref, "Origin": domain})
             data = r.json().get("data", {})
             if data.get("hasResource") and (data.get("streams") or data.get("dash")):
                 logger.info(f"Method 2 SUCCESS: {len(data.get('streams',[]))} MP4, {len(data.get('dash',[]))} DASH from {domain}")
+                _stream_cache[cache_key] = (data, domain, now)
                 return data, domain
-            else:
-                logger.warning(f"Method 2: has_resource={data.get('hasResource')}, streams={len(data.get('streams', []))}")
     except Exception as e:
         logger.error(f"Method 2 failed: {e}")
-    
-    # Method 3: Try moviebox.ph domain
+
+    # Method 3: Try netfilm.world directly
     try:
-        domain = "https://moviebox.ph"
+        domain = "https://netfilm.world"
         ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
-        url = f"https://h5-api.aoneroom.com/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
-        
-        logger.info(f"Method 3: Trying {domain}")
+        url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
+
         async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
             r = await c.get(url, headers={**PLAYER_HEADERS, "Referer": ref, "Origin": domain})
             data = r.json().get("data", {})
             if data.get("hasResource") and (data.get("streams") or data.get("dash")):
                 logger.info(f"Method 3 SUCCESS: {len(data.get('streams',[]))} MP4, {len(data.get('dash',[]))} DASH from {domain}")
+                _stream_cache[cache_key] = (data, domain, now)
                 return data, domain
-            else:
-                logger.warning(f"Method 3: has_resource={data.get('hasResource')}, streams={len(data.get('streams', []))}")
     except Exception as e:
         logger.error(f"Method 3 failed: {e}")
-    
-    # Method 4: Try with se=1,ep=1
-    if se == 0 and ep == 0:
-        try:
-            domain = "https://netfilm.world"
-            ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe=1&detailEp=1&lang=en"
-            url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se=1&ep=1&detailPath={slug}"
-            
-            logger.info(f"Method 4: Trying se=1,ep=1 on {domain}")
-            async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
-                r = await c.get(url, headers={**PLAYER_HEADERS, "Referer": ref, "Origin": domain})
-                data = r.json().get("data", {})
-                if data.get("hasResource") and (data.get("streams") or data.get("dash")):
-                    logger.info(f"Method 4 SUCCESS")
-                    return data, domain
-        except Exception as e:
-            logger.error(f"Method 4 failed: {e}")
-    
-    logger.error("ALL METHODS FAILED - No streams available")
+
+    logger.error("ALL METHODS FAILED")
     return {"hasResource": False, "streams": [], "dash": []}, ""
 
 # ===== HTML PAGES =====
@@ -159,21 +146,25 @@ async def streaming_page():
 async def root():
     return FileResponse("streaming.html")
 
-# ===== STREAM PROXY (DASH-FIRST) =====
+@app.get("/health")
+async def health():
+    return {"status": "ok", "timestamp": time.time()}
+
+# ===== STREAM PROXY (DASH-first, MP4 with proper headers) =====
 @app.get("/stream-proxy/{sid}")
 async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: int = 0, ep: int = 0):
     try:
         data, domain = await _get_stream_data(sid, detail_path, se, ep)
-        
-        # PRIORITY 1: DASH streams (most reliable via proxy)
+
+        # --- PRIORITY 1: DASH (most reliable) ---
         dash_sources = data.get("dash", [])
         if dash_sources:
             q = quality.replace("p", "")
-            # Find matching DASH quality or use best available
+            # pick matching quality or best
             sel = next((s for s in dash_sources if q in str(s.get("resolutions", ""))), dash_sources[-1])
             dash_url = sel.get("url")
             if dash_url:
-                logger.info(f"Serving DASH: {sel.get('resolutions')}p via proxy")
+                logger.info(f"Serving DASH {sel.get('resolutions')} via proxy")
                 async def gen_dash():
                     cdn_headers = {
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -186,54 +177,57 @@ async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: in
                             async for chunk in r2.aiter_bytes(1048576):
                                 yield chunk
                 return StreamingResponse(gen_dash(), media_type="application/dash+xml")
-        
-        # PRIORITY 2: MP4 via direct redirect (faster, avoids proxy timeout)
+
+        # --- PRIORITY 2: MP4 (direct redirect with proper Referer) ---
         mp4_streams = data.get("streams", [])
         if mp4_streams:
             q = quality.replace("p", "")
             sel = next((s for s in mp4_streams if s.get("resolutions") == q), mp4_streams[-1])
             mp4_url = sel.get("url")
             if mp4_url:
-                logger.info(f"Redirecting to MP4: {sel.get('resolution')}")
+                logger.info(f"Redirecting to MP4 {sel.get('resolution')}")
+                # Instead of proxying, we redirect the player directly.
+                # The player (browser) will send its own Referer (the player page) and the CDN will accept it.
                 return RedirectResponse(url=mp4_url, status_code=302)
-        
+
         raise HTTPException(404, "No streams available")
-    
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Stream proxy error: {e}")
         raise HTTPException(500, str(e))
 
-# ===== DOWNLOAD =====
+# ===== DOWNLOAD (MP4 only, force download) =====
 @app.get("/download/{sid}")
 async def download(sid: str, detail_path: str, quality: str = "480p", se: int = 0, ep: int = 0):
     data, domain = await _get_stream_data(sid, detail_path, se, ep)
-    
-    # Try MP4 first for download
-    streams = data.get("streams", [])
-    if streams:
-        q = quality.replace("p", "")
-        sel = next((s for s in streams if s.get("resolutions") == q), streams[-1])
-        mp4_url = sel.get("url")
-        if mp4_url:
-            async def gen():
-                cdn_headers = {
-                    **PLAYER_HEADERS,
-                    "Referer": f"{domain}/",
-                    "Origin": domain,
-                }
-                async with httpx.AsyncClient(follow_redirects=True, timeout=300, verify=False) as c:
-                    async with c.stream("GET", mp4_url, headers=cdn_headers) as r2:
-                        async for chunk in r2.aiter_bytes(1048576):
-                            yield chunk
-            fn = detail_path.replace("-", " ").title()
-            if se > 0:
-                fn += f"_S{se}E{ep}"
-            fn += f"_{quality}.mp4"
-            return StreamingResponse(gen(), media_type="video/mp4", headers={"Content-Disposition": f'attachment; filename="{fn}"'})
-    
-    raise HTTPException(404, "No downloadable streams available")
+    mp4_streams = data.get("streams", [])
+    if not mp4_streams:
+        raise HTTPException(404, "No downloadable streams")
+    q = quality.replace("p", "")
+    sel = next((s for s in mp4_streams if s.get("resolutions") == q), mp4_streams[-1])
+    mp4_url = sel.get("url")
+    if not mp4_url:
+        raise HTTPException(404, "No URL")
+
+    async def gen():
+        cdn_headers = {
+            **PLAYER_HEADERS,
+            "Referer": f"{domain}/",
+            "Origin": domain,
+        }
+        async with httpx.AsyncClient(follow_redirects=True, timeout=300, verify=False) as c:
+            async with c.stream("GET", mp4_url, headers=cdn_headers) as r2:
+                async for chunk in r2.aiter_bytes(1048576):
+                    yield chunk
+
+    fn = detail_path.replace("-", " ").title()
+    if se > 0:
+        fn += f"_S{se}E{ep}"
+    fn += f"_{quality}.mp4"
+    return StreamingResponse(gen(), media_type="video/mp4",
+                             headers={"Content-Disposition": f'attachment; filename="{fn}"'})
 
 # ===== EPISODES =====
 @app.get("/api/episodes/{sid}")
@@ -253,12 +247,7 @@ async def episodes(sid: str, detail_path: str):
                 })
         if not eps:
             eps = [{"season": 1, "episode": i, "title": f"Episode {i}"} for i in range(1, 21)]
-        return {
-            "subject_id": sid,
-            "detail_path": detail_path,
-            "total": len(eps),
-            "episodes": eps[:100]
-        }
+        return {"subject_id": sid, "detail_path": detail_path, "total": len(eps), "episodes": eps[:100]}
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -338,11 +327,10 @@ async def search(q: str = Query(default="", min_length=1), page: int = 1):
     } for s in raw]
     return {"query": q, "page": page, "items": items}
 
-# ===== STREAM INFO (with all DASH qualities) =====
+# ===== STREAM INFO =====
 @app.get("/api/stream/{sid}")
 async def stream_info(sid: str, detail_path: str, se: int = 0, ep: int = 0):
     data, _ = await _get_stream_data(sid, detail_path, se, ep)
-    
     streams = [{
         "resolution": f"{s.get('resolutions')}p",
         "format": "MP4",
@@ -350,7 +338,6 @@ async def stream_info(sid: str, detail_path: str, se: int = 0, ep: int = 0):
         "size": s.get("size"),
         "duration": s.get("duration")
     } for s in data.get("streams", [])]
-    
     dash = [{
         "format": "DASH",
         "resolutions": d.get("resolutions", "HD"),
@@ -359,7 +346,6 @@ async def stream_info(sid: str, detail_path: str, se: int = 0, ep: int = 0):
         "duration": d.get("duration"),
         "codec": d.get("codecName", "hevc")
     } for d in data.get("dash", [])]
-    
     return {
         "subject_id": sid,
         "se": se,
