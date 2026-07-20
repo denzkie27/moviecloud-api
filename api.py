@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="MovieBox API Pro", version="2.1.10")
+app = FastAPI(title="MovieBox API Pro", version="2.1.11")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 API_BASE = "https://h5-api.aoneroom.com/wefeed-h5api-bff"
@@ -18,17 +18,17 @@ DEFAULT_HEADERS = {
     "Origin": "https://moviebox.ph",
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "X-Forwarded-For": "112.198.0.0",
-    "CF-IPCountry": "PH",
 }
 
 PLAYER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
     "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.9",
-    "Origin": "https://netfilm.world",
-    "Referer": "https://netfilm.world/",
-    "X-Forwarded-For": "112.198.0.0",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "sec-ch-ua": '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
 }
 
 async def _get_token():
@@ -64,49 +64,103 @@ async def _req(url, method="GET", payload=None):
         return r.json()
 
 async def _get_stream_data(sid, slug, se=0, ep=0):
-    """Try multiple domains to get stream data"""
-    domains_to_try = []
+    """Try multiple methods to get stream data"""
     
-    # Try to get domain from API first
+    # Method 1: Get domain from API, then fetch stream
     try:
         dom = await _req(f"{API_BASE}/media-player/get-domain")
-        domain = dom.get("data", "").rstrip("/")
-        if domain:
-            domains_to_try.append(domain)
+        domain = dom.get("data", "").rstrip("/") or "https://netfilm.world"
+        
+        headers = {
+            **PLAYER_HEADERS,
+            "Origin": domain,
+            "Referer": f"{domain}/",
+        }
+        
+        ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
+        url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
+        
+        logger.info(f"Method 1: Trying {domain}")
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
+            r = await c.get(url, headers={**headers, "Referer": ref})
+            data = r.json().get("data", {})
+            if data.get("hasResource") and data.get("streams"):
+                logger.info(f"Method 1 SUCCESS: {len(data['streams'])} streams")
+                return data, ref
+            else:
+                logger.warning(f"Method 1: has_resource={data.get('hasResource')}, streams={len(data.get('streams', []))}")
     except Exception as e:
-        logger.error(f"Domain fetch error: {e}")
+        logger.error(f"Method 1 failed: {e}")
     
-    # Add fallback domains
-    domains_to_try.extend([
-        "https://netfilm.world",
-        "https://www.netfilm.world",
-        "https://moviebox.ph"
-    ])
+    # Method 2: Try netfilm.world directly
+    try:
+        domain = "https://netfilm.world"
+        headers = {
+            **PLAYER_HEADERS,
+            "Origin": domain,
+            "Referer": domain,
+        }
+        ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
+        url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
+        
+        logger.info(f"Method 2: Trying {domain}")
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
+            r = await c.get(url, headers={**headers, "Referer": ref})
+            data = r.json().get("data", {})
+            if data.get("hasResource") and data.get("streams"):
+                logger.info(f"Method 2 SUCCESS: {len(data['streams'])} streams")
+                return data, ref
+            else:
+                logger.warning(f"Method 2: has_resource={data.get('hasResource')}, streams={len(data.get('streams', []))}")
+    except Exception as e:
+        logger.error(f"Method 2 failed: {e}")
     
-    # Remove duplicates
-    domains_to_try = list(dict.fromkeys(domains_to_try))
+    # Method 3: Try moviebox.ph domain
+    try:
+        domain = "https://moviebox.ph"
+        headers = {
+            **PLAYER_HEADERS,
+            "Origin": domain,
+            "Referer": domain,
+        }
+        ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
+        url = f"https://h5-api.aoneroom.com/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
+        
+        logger.info(f"Method 3: Trying {domain}")
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
+            r = await c.get(url, headers={**headers, "Referer": ref})
+            data = r.json().get("data", {})
+            if data.get("hasResource") and data.get("streams"):
+                logger.info(f"Method 3 SUCCESS: {len(data['streams'])} streams")
+                return data, ref
+            else:
+                logger.warning(f"Method 3: has_resource={data.get('hasResource')}, streams={len(data.get('streams', []))}")
+    except Exception as e:
+        logger.error(f"Method 3 failed: {e}")
     
-    for domain in domains_to_try:
+    # Method 4: Try with se=1,ep=1 (sometimes needed for movies)
+    if se == 0 and ep == 0:
         try:
-            ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
-            url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se={se}&ep={ep}&detailPath={slug}"
+            domain = "https://netfilm.world"
+            headers = {
+                **PLAYER_HEADERS,
+                "Origin": domain,
+                "Referer": domain,
+            }
+            ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe=1&detailEp=1&lang=en"
+            url = f"{domain}/wefeed-h5api-bff/subject/play?subjectId={sid}&se=1&ep=1&detailPath={slug}"
             
-            logger.info(f"Trying stream domain: {domain}")
-            
+            logger.info(f"Method 4: Trying se=1,ep=1")
             async with httpx.AsyncClient(follow_redirects=True, timeout=30) as c:
-                r = await c.get(url, headers={**PLAYER_HEADERS, "Referer": ref})
+                r = await c.get(url, headers={**headers, "Referer": ref})
                 data = r.json().get("data", {})
-                
                 if data.get("hasResource") and data.get("streams"):
-                    logger.info(f"✅ Stream found on {domain} - {len(data['streams'])} sources")
+                    logger.info(f"Method 4 SUCCESS: {len(data['streams'])} streams")
                     return data, ref
-                else:
-                    logger.warning(f"❌ No stream on {domain}")
         except Exception as e:
-            logger.error(f"Failed on {domain}: {e}")
-            continue
+            logger.error(f"Method 4 failed: {e}")
     
-    logger.error("All domains failed, returning empty data")
+    logger.error("ALL METHODS FAILED - No streams available")
     return {"hasResource": False, "streams": [], "dash": []}, ""
 
 # ===== HTML PAGES =====
@@ -132,11 +186,11 @@ async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: in
     data, ref = await _get_stream_data(sid, detail_path, se, ep)
     streams = data.get("streams", [])
     if not streams:
-        raise HTTPException(404, "No streams available")
+        raise HTTPException(404, "No streams available for this content")
     q = quality.replace("p", "")
     sel = next((s for s in streams if s.get("resolutions") == q), streams[-1])
     if not sel.get("url"):
-        raise HTTPException(404, "No stream URL")
+        raise HTTPException(404, "No stream URL found")
     async def gen():
         async with httpx.AsyncClient(follow_redirects=True, timeout=300) as c:
             async with c.stream("GET", sel["url"], headers={**PLAYER_HEADERS, "Referer": ref}) as r2:
