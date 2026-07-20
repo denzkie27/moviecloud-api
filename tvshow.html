@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Shows - Stream</title>
+    <title>TV Shows - MovieCloud</title>
+    <!-- DASH player for 1080p streams -->
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#0a0a0a;color:#fff;font-family:Arial,sans-serif}
@@ -36,19 +38,16 @@
         .qbtn:hover,.qbtn.active{background:#e50914}
         .epbtn{background:#ff6b00!important}
         .epbtn:hover{background:#e05d00!important}
+        .dashbtn{background:#8b5cf6!important}
+        .dashbtn:hover,.dashbtn.active{background:#7c3aed!important}
         .dlbtn{background:#28a745!important;font-weight:bold}
         .dlbtn:hover{background:#1e7e34!important}
-        .season-label{color:#e50914;font-weight:bold;margin:8px 5px 0 0;width:100%;font-size:13px}
-        .dmodal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:2000;justify-content:center;align-items:center}
-        .dbox{background:#1a1a1a;padding:35px;border-radius:20px;text-align:center;min-width:350px;border:2px solid #333}
-        .dbox h3{margin-bottom:10px}
-        .bar{width:100%;height:28px;background:#333;border-radius:14px;overflow:hidden;margin:15px 0}
-        .fill{height:100%;background:linear-gradient(90deg,#e50914,#ff4444);width:0%;transition:width .3s;border-radius:14px}
+        .season-label{color:#e50914;font-weight:bold;margin:8px 5px 0 0;font-size:13px}
+        select{padding:8px 15px;border-radius:10px;background:#333;color:#fff;border:1px solid #555;margin:0 10px}
         .loading-text{text-align:center;padding:60px;color:#666;font-size:18px}
         .spinner{display:inline-block;width:40px;height:40px;border:3px solid #333;border-top-color:#e50914;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px}
         @keyframes spin{to{transform:rotate(360deg)}}
-        select{padding:8px 15px;border-radius:10px;background:#333;color:#fff;border:1px solid #555;margin:10px}
-        @media(max-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px}.modal-content{margin:5px auto}.dbox{min-width:280px;padding:25px}.epbtn{font-size:10px!important;padding:5px 8px!important}}
+        @media(max-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px}.modal-content{margin:5px auto}}
     </style>
 </head>
 <body>
@@ -69,264 +68,278 @@
             <span class="close" onclick="closePlayer()">✕</span>
             <video id="video" controls autoplay></video>
             <div class="controls" id="controls">
-                <span style="color:#fff;">📺 Select an episode</span>
+                <span style="color:#fff;">📺 Select a show</span>
             </div>
         </div>
     </div>
 
-    <!-- Download Modal -->
-    <div class="dmodal" id="dmodal">
-        <div class="dbox">
-            <h3>⬇️ Downloading Episode</h3>
-            <p id="dtitle" style="color:#ccc;"></p>
-            <select id="dq" onchange="dqual=this.value">
-                <option value="360p">360p</option>
-                <option value="480p" selected>480p</option>
-                <option value="720p">720p</option>
-            </select>
-            <div class="bar"><div class="fill" id="fill"></div></div>
-            <p id="dstats" style="color:#999;">Preparing...</p>
-            <p id="dspeed" style="color:#999;"></p>
-            <button onclick="cancelDL()" style="background:#dc3545;margin-top:10px;">Cancel</button>
-        </div>
-    </div>
-
     <script>
-        const API = 'https://moviecloud-api.onrender.com'; // CHANGE THIS
-        let streams=[], show=null, dc=null, dqual='480p', activeQ=null;
-        let currentSe=1, currentEp=1;
+        // 🔥 CHANGE THIS to your actual Render URL if different
+        const API = 'https://moviecloud-api.onrender.com';
+        let streams = [], show = null, activeQ = null, dashPlayer = null;
+        let currentSe = 1, currentEp = 1;
+        let allEpisodes = []; // Store all episodes after fetch
 
-        window.onload=()=>loadShows('home');
+        window.onload = () => loadShows('home');
 
-        function setActiveBtn(id){
-            ['btnHome','btnTV'].forEach(b=>{
-                const el=document.getElementById(b);
-                if(el)el.classList.remove('active');
+        function setActiveBtn(id) {
+            ['btnHome','btnTV'].forEach(b => {
+                const el = document.getElementById(b);
+                if (el) el.classList.remove('active');
             });
-            const btn=document.getElementById(id);
-            if(btn)btn.classList.add('active');
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.add('active');
         }
 
-        async function loadShows(type){
-            setActiveBtn(type==='home'?'btnHome':'btnTV');
-            const g=document.getElementById('grid');
-            g.innerHTML='<div class="loading-text"><div class="spinner"></div>Loading...</div>';
-            try{
+        async function loadShows(type) {
+            setActiveBtn(type === 'home' ? 'btnHome' : 'btnTV');
+            const g = document.getElementById('grid');
+            g.innerHTML = '<div class="loading-text"><div class="spinner"></div>Loading...</div>';
+            try {
                 let d;
-                if(type==='home'){const r=await fetch(API+'/home');d=await r.json();showShows(d);}
-                else{const r=await fetch(API+'/tv-series');d=await r.json();showItems(d.items);}
-            }catch(e){g.innerHTML='<div class="loading-text" style="color:red;">Error loading</div>';}
+                if (type === 'home') { const r = await fetch(API + '/home'); d = await r.json(); showShows(d); }
+                else { const r = await fetch(API + '/tv-series'); d = await r.json(); showItems(d.items); }
+            } catch (e) { g.innerHTML = '<div class="loading-text" style="color:red;">Error loading</div>'; }
         }
 
-        function showShows(d){
-            const g=document.getElementById('grid');g.innerHTML='';
-            if(d.sections)d.sections.forEach(s=>{if(s.items)s.items.forEach(m=>{if(m.poster_url)g.appendChild(card(m));});});
+        function showShows(d) {
+            const g = document.getElementById('grid'); g.innerHTML = '';
+            if (d.sections) d.sections.forEach(s => { if (s.items) s.items.forEach(m => { if (m.poster_url) g.appendChild(card(m)); }); });
         }
 
-        function showItems(items){
-            const g=document.getElementById('grid');g.innerHTML='';
-            if(items)items.forEach(m=>{if(m.poster_url)g.appendChild(card(m));});
+        function showItems(items) {
+            const g = document.getElementById('grid'); g.innerHTML = '';
+            if (items) items.forEach(m => { if (m.poster_url) g.appendChild(card(m)); });
         }
 
-        function card(m){
-            const c=document.createElement('div');c.className='card';
-            const db=document.createElement('span');db.className='dbtn';db.textContent='⬇';db.title='Download latest';
-            db.onclick=e=>{e.stopPropagation();show=m;currentSe=1;currentEp=1;startDL(show);};
+        function card(m) {
+            const c = document.createElement('div'); c.className = 'card';
+            const db = document.createElement('span'); db.className = 'dbtn'; db.textContent = '⬇'; db.title = 'Download latest';
+            db.onclick = e => { e.stopPropagation(); show = m; currentSe = 1; currentEp = 1; downloadEpisode(); };
             c.appendChild(db);
-            const co=document.createElement('div');co.onclick=()=>openShow(m);
-            co.innerHTML=`<img src="${m.poster_url}" onerror="this.style.background='#333'" loading="lazy">
-                <div class="info"><div class="title">${m.name||'Unknown'}</div>
-                <div class="meta">${m.year||''} ${m.rating?'⭐'+m.rating:''}</div>
-                ${m.badge?`<span class="badge">${m.badge}</span>`:''}</div>`;
-            c.appendChild(co);return c;
+            const co = document.createElement('div'); co.onclick = () => openShow(m);
+            co.innerHTML = `<img src="${m.poster_url}" onerror="this.style.background='#333'" loading="lazy">
+                <div class="info"><div class="title">${m.name || 'Unknown'}</div>
+                <div class="meta">${m.year || ''} ${m.rating ? '⭐' + m.rating : ''}</div>
+                ${m.badge ? `<span class="badge">${m.badge}</span>` : ''}</div>`;
+            c.appendChild(co); return c;
         }
 
-        async function searchShows(q){
-            if(!q)return;
-            document.getElementById('grid').innerHTML='<div class="loading-text"><div class="spinner"></div>Searching...</div>';
-            try{
-                const r=await fetch(API+'/search?q='+encodeURIComponent(q));
-                const d=await r.json();
-                if(d.items&&d.items.length)showItems(d.items);
-                else document.getElementById('grid').innerHTML='<div class="loading-text">No results for "'+q+'"</div>';
-            }catch(e){document.getElementById('grid').innerHTML='<div class="loading-text" style="color:red;">Search failed</div>';}
+        async function searchShows(q) {
+            if (!q) return;
+            document.getElementById('grid').innerHTML = '<div class="loading-text"><div class="spinner"></div>Searching...</div>';
+            try {
+                const r = await fetch(API + '/search?q=' + encodeURIComponent(q));
+                const d = await r.json();
+                if (d.items && d.items.length) showItems(d.items);
+                else document.getElementById('grid').innerHTML = '<div class="loading-text">No results</div>';
+            } catch (e) { document.getElementById('grid').innerHTML = '<div class="loading-text" style="color:red;">Search failed</div>'; }
         }
 
-        async function openShow(m){
-            if(!m.subject_id||!m.slug){alert('Cannot play this show');return;}
-            show=m;
-            document.getElementById('playerModal').style.display='block';
-            document.getElementById('controls').innerHTML='<span style="color:#fff;">📺 '+ (m.name||'TV Show') +' - Loading episodes...</span>';
-            await loadEpisodes(m.subject_id,m.slug);
+        async function openShow(m) {
+            if (!m.subject_id || !m.slug) return;
+            show = m;
+            destroyDash();
+            document.getElementById('playerModal').style.display = 'block';
+            document.getElementById('controls').innerHTML = '<span style="color:#fff;">📺 Loading episodes...</span>';
+            await loadEpisodes(m.subject_id, m.slug);
         }
 
-        async function loadEpisodes(sid,slug){
-            const ctr=document.getElementById('controls');
-            try{
-                const r=await fetch(`${API}/api/episodes/${sid}?detail_path=${encodeURIComponent(slug)}`);
-                const d=await r.json();
-                
-                if(d.episodes&&d.episodes.length>0){
-                    ctr.innerHTML=`<span style="color:#fff;width:100%;">📺 ${show?.name||'TV Show'} - Select Episode:</span>`;
-                    
-                    // Group by season
-                    const seasons={};
-                    d.episodes.forEach(e=>{
-                        if(!seasons[e.season])seasons[e.season]=[];
-                        seasons[e.season].push(e);
-                    });
-                    
-                    for(const[sn,eps]of Object.entries(seasons)){
-                        const sl=document.createElement('span');
-                        sl.className='season-label';
-                        sl.textContent=`📁 Season ${sn}:`;
-                        ctr.appendChild(sl);
-                        
-                        eps.slice(0,20).forEach(e=>{
-                            const b=document.createElement('button');
-                            b.className='qbtn epbtn';
-                            b.style.cssText='font-size:11px;padding:6px 12px;';
-                            b.textContent=`E${e.episode}`;
-                            b.title=e.title||'';
-                            b.onclick=()=>{
-                                currentSe=e.season;
-                                currentEp=e.episode;
-                                loadStream(sid,slug,e.season,e.episode);
-                            };
-                            ctr.appendChild(b);
-                        });
+        async function loadEpisodes(sid, slug) {
+            const ctr = document.getElementById('controls');
+            try {
+                const r = await fetch(`${API}/api/episodes/${sid}?detail_path=${encodeURIComponent(slug)}`);
+                const d = await r.json();
+                if (d.episodes && d.episodes.length > 0) {
+                    allEpisodes = d.episodes;
+                    // Get available seasons
+                    const seasons = [...new Set(allEpisodes.map(e => e.season))].sort((a,b) => a-b);
+                    // Build season dropdown
+                    let html = `<span style="color:#fff;">📺 ${show?.name || 'Show'} - Season: </span>
+                        <select id="seasonSelect" onchange="onSeasonChange()">
+                            ${seasons.map(sn => `<option value="${sn}" ${sn === currentSe ? 'selected' : ''}>Season ${sn}</option>`).join('')}
+                        </select>`;
+                    ctr.innerHTML = html;
+                    // Show episodes for the current season (or first season)
+                    if (currentSe && seasons.includes(currentSe)) {
+                        renderEpisodesForSeason(currentSe, sid, slug);
+                    } else {
+                        currentSe = seasons[0];
+                        renderEpisodesForSeason(currentSe, sid, slug);
                     }
-                }else{
-                    ctr.innerHTML='<span style="color:red;">No episodes found. This might not be a TV series.</span>';
+                } else {
+                    ctr.innerHTML = '<span style="color:red;">No episodes found. This might not be a TV series.</span>';
                 }
-            }catch(e){
-                ctr.innerHTML='<span style="color:red;">Failed to load episodes</span>';
+            } catch (e) {
+                ctr.innerHTML = '<span style="color:red;">Failed to load episodes</span>';
             }
         }
 
-        async function loadStream(sid,slug,se,ep){
-            const ctr=document.getElementById('controls');
-            ctr.innerHTML=`<span style="color:#fff;">📺 S${se}E${ep} - Loading streams...</span>`;
-            
-            try{
-                const r=await fetch(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=${se}&ep=${ep}`);
-                const d=await r.json();
+        function onSeasonChange() {
+            const sel = document.getElementById('seasonSelect');
+            if (sel) {
+                currentSe = parseInt(sel.value);
+                // Re-render episodes for the new season
+                const sid = show.subject_id;
+                const slug = show.slug;
+                renderEpisodesForSeason(currentSe, sid, slug);
+            }
+        }
+
+        function renderEpisodesForSeason(season, sid, slug) {
+            const ctr = document.getElementById('controls');
+            // Filter episodes for the selected season
+            const seasonEps = allEpisodes.filter(e => e.season === season).sort((a,b) => a.episode - b.episode);
+            // Keep the season dropdown, add episode buttons
+            let html = ctr.innerHTML; // keep the dropdown part
+            // Remove previous episode buttons (simplest: rebuild the whole controls)
+            html = `<span style="color:#fff;">📺 ${show?.name || 'Show'} - Season: </span>
+                <select id="seasonSelect" onchange="onSeasonChange()">
+                    ${[...new Set(allEpisodes.map(e => e.season))].sort((a,b)=>a-b).map(sn => `<option value="${sn}" ${sn === season ? 'selected' : ''}>Season ${sn}</option>`).join('')}
+                </select>`;
+            ctr.innerHTML = html;
+            // Add episode buttons
+            const epContainer = document.createElement('div');
+            epContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;width:100%;';
+            seasonEps.forEach(ep => {
+                const btn = document.createElement('button');
+                btn.className = 'qbtn epbtn';
+                btn.style.cssText = 'font-size:11px;padding:5px 12px;';
+                btn.textContent = `E${ep.episode}`;
+                btn.title = ep.title || '';
+                btn.onclick = () => {
+                    currentSe = season;
+                    currentEp = ep.episode;
+                    loadStream(sid, slug, season, ep.episode);
+                };
+                epContainer.appendChild(btn);
+            });
+            ctr.appendChild(epContainer);
+        }
+
+        async function loadStream(sid, slug, se, ep) {
+            const ctr = document.getElementById('controls');
+            ctr.innerHTML = `<span style="color:#fff;">📺 S${se}E${ep} - Loading streams...</span>`;
+            try {
+                const r = await fetch(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=${se}&ep=${ep}`);
+                const d = await r.json();
                 
-                if(d.sources&&d.sources.length){
-                    streams=d.sources;
-                    ctr.innerHTML=`<span style="color:#fff;font-weight:bold;">📺 S${se} E${ep}</span>`;
-                    
-                    // Episode navigation
-                    const prevBtn=document.createElement('button');
-                    prevBtn.className='qbtn';prevBtn.textContent='◀ Prev';
-                    prevBtn.onclick=()=>{if(currentEp>1){currentEp--;loadStream(sid,slug,currentSe,currentEp);}};
-                    ctr.appendChild(prevBtn);
-                    
-                    const nextBtn=document.createElement('button');
-                    nextBtn.className='qbtn';nextBtn.textContent='Next ▶';
-                    nextBtn.onclick=()=>{currentEp++;loadStream(sid,slug,currentSe,currentEp);};
-                    ctr.appendChild(nextBtn);
-                    
-                    const epListBtn=document.createElement('button');
-                    epListBtn.className='qbtn epbtn';epListBtn.textContent='📋 All Episodes';
-                    epListBtn.onclick=()=>loadEpisodes(sid,slug);
-                    ctr.appendChild(epListBtn);
-                    
-                    // Quality
-                    const ql=document.createElement('span');ql.style.cssText='color:#fff;margin:0 8px;';ql.textContent='Quality:';ctr.appendChild(ql);
-                    
-                    d.sources.forEach((s,i)=>{
-                        const b=document.createElement('button');b.className='qbtn';
-                        b.textContent=s.resolution||'?';
-                        b.onclick=()=>{
-                            if(activeQ)activeQ.classList.remove('active');
-                            b.classList.add('active');activeQ=b;
-                            playStream(i);
-                        };
+                const mp4Sources = (d.sources || []).filter(s => s.format === 'MP4' || !s.format);
+                const dashSources = d.dash || [];
+                
+                if (mp4Sources.length === 0 && dashSources.length === 0) {
+                    ctr.innerHTML = `<span style="color:red;">❌ No streams for S${se}E${ep}</span>
+                        <button class="qbtn" onclick="openShow(show)">← Back to Episodes</button>`;
+                    return;
+                }
+                
+                streams = mp4Sources;
+                ctr.innerHTML = `<span style="color:#fff;font-weight:bold;">📺 S${se} E${ep}</span>`;
+                
+                // Episode navigation
+                const prevBtn = document.createElement('button'); prevBtn.className = 'qbtn'; prevBtn.textContent = '◀ Prev';
+                prevBtn.onclick = () => { if (currentEp > 1) { currentEp--; loadStream(sid, slug, currentSe, currentEp); } };
+                ctr.appendChild(prevBtn);
+                
+                const nextBtn = document.createElement('button'); nextBtn.className = 'qbtn'; nextBtn.textContent = 'Next ▶';
+                nextBtn.onclick = () => { currentEp++; loadStream(sid, slug, currentSe, currentEp); };
+                ctr.appendChild(nextBtn);
+                
+                const epListBtn = document.createElement('button'); epListBtn.className = 'qbtn epbtn'; epListBtn.textContent = '📋 All Episodes';
+                epListBtn.onclick = () => loadEpisodes(sid, slug); ctr.appendChild(epListBtn);
+                
+                // MP4 quality buttons
+                if (mp4Sources.length > 0) {
+                    const ql = document.createElement('span'); ql.style.cssText = 'color:#fff;margin:0 8px;'; ql.textContent = 'MP4:'; ctr.appendChild(ql);
+                    mp4Sources.forEach((s, i) => {
+                        const b = document.createElement('button'); b.className = 'qbtn';
+                        b.textContent = s.resolution || '?';
+                        b.onclick = () => switchToMp4(i, b);
                         ctr.appendChild(b);
                     });
-                    
-                    // Download
-                    const dl=document.createElement('button');dl.className='qbtn dlbtn';dl.textContent='⬇️ Download';
-                    dl.onclick=()=>{
-                        document.getElementById('playerModal').style.display='none';
-                        dqual=streams[streams.length-1].resolution||'480p';
-                        startDL(show);
-                    };
-                    ctr.appendChild(dl);
-                    
-                    playStream(d.sources.length-1);
-                    
-                }else{
-                    ctr.innerHTML=`<span style="color:red;">❌ No streams for S${se}E${ep}</span>`;
-                    const back=document.createElement('button');back.className='qbtn';back.textContent='← Back to Episodes';
-                    back.onclick=()=>loadEpisodes(sid,slug);ctr.appendChild(back);
                 }
-            }catch(e){ctr.innerHTML='<span style="color:red;">Failed to load stream</span>';}
-        }
-
-        function playStream(i){
-            const v=document.getElementById('video');
-            if(streams[i]&&show){
-                const q=streams[i].resolution||'480p';
-                const url=`${API}/stream-proxy/${show.subject_id}?detail_path=${encodeURIComponent(show.slug)}&quality=${q}&se=${currentSe}&ep=${currentEp}`;
-                console.log(`▶️ S${currentSe}E${currentEp} [${q}]`);
-                v.src=url;v.load();v.play().catch(()=>{});
+                
+                // DASH button
+                if (dashSources.length > 0) {
+                    const dashBtn = document.createElement('button');
+                    dashBtn.className = 'qbtn dashbtn';
+                    dashBtn.textContent = '🎬 DASH ' + (dashSources[0].resolutions || 'HD');
+                    dashBtn.onclick = () => switchToDash(dashSources[0], dashBtn);
+                    ctr.appendChild(dashBtn);
+                }
+                
+                // Download button
+                const dl = document.createElement('button'); dl.className = 'qbtn dlbtn'; dl.textContent = '⬇️ Download';
+                dl.onclick = () => downloadEpisode();
+                ctr.appendChild(dl);
+                
+                // Auto-play best MP4 or DASH
+                if (mp4Sources.length > 0) {
+                    const bestIdx = mp4Sources.length - 1;
+                    const bestBtn = ctr.querySelectorAll('.qbtn:not(.dashbtn):not(.dlbtn):not(.epbtn)')[bestIdx];
+                    switchToMp4(bestIdx, bestBtn);
+                } else if (dashSources.length > 0) {
+                    const dashBtn = ctr.querySelector('.dashbtn');
+                    switchToDash(dashSources[0], dashBtn);
+                }
+                
+            } catch (e) {
+                ctr.innerHTML = '<span style="color:red;">Failed to load stream</span>';
+                console.error(e);
             }
         }
 
-        function closePlayer(){
-            document.getElementById('playerModal').style.display='none';
-            const v=document.getElementById('video');v.pause();v.src='';
-            streams=[];show=null;activeQ=null;
-        }
-
-        function startDL(m){
-            if(!m?.subject_id||!m?.slug){alert('Cannot download');return;}
-            show=m;
-            document.getElementById('dmodal').style.display='flex';
-            document.getElementById('dtitle').textContent=`${m.name||'Show'} - S${currentSe}E${currentEp}`;
-            dl(m);
-        }
-
-        async function dl(m){
-            const f=document.getElementById('fill'),s=document.getElementById('dstats'),sp=document.getElementById('dspeed');
-            f.style.width='0%';s.textContent='Starting...';sp.textContent='';
-            const url=`${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=${currentSe}&ep=${currentEp}`;
-            dc=new AbortController();
-            try{
-                const r=await fetch(url,{signal:dc.signal});
-                if(!r.ok)throw new Error('HTTP '+r.status);
-                const total=parseInt(r.headers.get('content-length'))||0;
-                const reader=r.body.getReader();const chunks=[];
-                let dl=0,lt=Date.now(),ld=0;
-                while(true){
-                    const{done,value}=await reader.read();if(done)break;
-                    chunks.push(value);dl+=value.length;
-                    const now=Date.now();
-                    if(now-lt>1000){
-                        const speed=(dl-ld)/((now-lt)/1000),pct=total?(dl/total)*100:0;
-                        f.style.width=Math.min(pct,100)+'%';
-                        s.textContent=total?`${(dl/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)`:`${(dl/(1024*1024)).toFixed(1)} MB`;
-                        sp.textContent=`⚡ ${(speed/(1024*1024)).toFixed(2)} MB/s`;
-                        lt=now;ld=dl;
-                    }
-                }
-                const blob=new Blob(chunks,{type:'video/mp4'});
-                const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-                a.download=`${(m.name||'show').replace(/[^a-z0-9]/gi,'_')}_S${currentSe}E${currentEp}_${dqual}.mp4`;
-                document.body.appendChild(a);a.click();document.body.removeChild(a);
-                s.textContent='✅ Download Complete!';sp.textContent='';
-                setTimeout(()=>{document.getElementById('dmodal').style.display='none';},2000);
-            }catch(e){
-                if(e.name!=='AbortError')alert('Download failed: '+e.message);
-                document.getElementById('dmodal').style.display='none';
+        function switchToMp4(index, btn) {
+            destroyDash();
+            if (activeQ) activeQ.classList.remove('active');
+            if (btn) { btn.classList.add('active'); activeQ = btn; }
+            const v = document.getElementById('video');
+            if (streams[index] && show) {
+                const q = streams[index].resolution || '480p';
+                const url = `${API}/stream-proxy/${show.subject_id}?detail_path=${encodeURIComponent(show.slug)}&quality=${q}&se=${currentSe}&ep=${currentEp}`;
+                v.src = url; v.load(); v.play().catch(() => {});
             }
         }
 
-        function cancelDL(){if(dc)dc.abort();document.getElementById('dmodal').style.display='none';}
-        document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
-        document.getElementById('playerModal').addEventListener('click',function(e){if(e.target===this)closePlayer();});
+        function switchToDash(dashSource, btn) {
+            destroyDash();
+            if (activeQ) activeQ.classList.remove('active');
+            if (btn) { btn.classList.add('active'); activeQ = btn; }
+            const v = document.getElementById('video');
+            try {
+                dashPlayer = dashjs.MediaPlayer().create();
+                dashPlayer.initialize(v, dashSource.url, true);
+                dashPlayer.setAutoPlay(true);
+            } catch (e) {
+                console.error('DASH error:', e);
+                v.src = dashSource.url; v.load(); v.play().catch(() => {});
+            }
+        }
+
+        function destroyDash() {
+            if (dashPlayer) { dashPlayer.destroy(); dashPlayer = null; }
+            const v = document.getElementById('video');
+            v.pause(); v.removeAttribute('src'); v.load();
+        }
+
+        function closePlayer() {
+            destroyDash();
+            document.getElementById('playerModal').style.display = 'none';
+            streams = []; show = null; activeQ = null;
+        }
+
+        function downloadEpisode() {
+            if (!show || !show.subject_id || !show.slug) return;
+            const dqual = '480p'; // default download quality
+            const url = `${API}/download/${show.subject_id}?detail_path=${encodeURIComponent(show.slug)}&quality=${dqual}&se=${currentSe}&ep=${currentEp}`;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(show.name || 'show').replace(/[^a-z0-9]/gi, '_')}_S${currentSe}E${currentEp}_${dqual}.mp4`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
+        document.getElementById('playerModal').addEventListener('click', function(e) { if (e.target === this) closePlayer(); });
     </script>
 </body>
 </html>

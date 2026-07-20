@@ -1,21 +1,18 @@
 import os
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import uvicorn
 
-# Import your existing API app
+# Import the API app from api.py
 from api import app as api_app
 
-# Create a main app
+# Create main app
 app = FastAPI()
 
-# Mount the API routes under /api (optional; you can also include them directly)
-# We'll just mount the whole api_app at root
-app.mount("/", api_app)
+# Include all API routes from api_app directly (no mount)
+app.include_router(api_app.router)
 
-# Serve static HTML files
-# We'll use a simple route for each HTML page
+# Now add HTML page routes (they will not conflict because API doesn't have these paths)
 @app.get("/streaming.html")
 async def streaming():
     return FileResponse("streaming.html")

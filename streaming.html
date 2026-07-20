@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieCloud - Stream Free</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            background:#0a0a0a;
+            color:#fff;
+            font-family:'Segoe UI', Arial, sans-serif;
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(229,9,20,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139,92,246,0.1) 0%, transparent 50%);
+        }
+        .container{
+            text-align:center;
+            max-width:600px;
+            padding:20px;
+        }
+        h1{
+            font-size:3rem;
+            margin-bottom:10px;
+            background:linear-gradient(135deg, #e50914, #8b5cf6);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+        p.subtitle{
+            color:#aaa;
+            font-size:1.2rem;
+            margin-bottom:40px;
+        }
+        .links{
+            display:flex;
+            flex-wrap:wrap;
+            gap:20px;
+            justify-content:center;
+        }
+        .card-link{
+            flex:1 1 200px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;
+            padding:40px 20px;
+            text-decoration:none;
+            color:#fff;
+            transition:transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            backdrop-filter:blur(10px);
+        }
+        .card-link:hover{
+            transform:translateY(-8px);
+            box-shadow:0 15px 40px rgba(229,9,20,0.3);
+            border-color:#e50914;
+        }
+        .card-link .icon{
+            font-size:3rem;
+            margin-bottom:15px;
+        }
+        .card-link h2{
+            font-size:1.8rem;
+            margin-bottom:8px;
+        }
+        .card-link p{
+            color:#aaa;
+            font-size:0.95rem;
+        }
+        footer{
+            margin-top:60px;
+            color:#555;
+            font-size:0.85rem;
+        }
+        @media(max-width:500px){
+            h1{font-size:2.2rem}
+            .card-link{padding:30px 15px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 MovieCloud</h1>
+        <p class="subtitle">Stream movies & TV shows for free</p>
+        <div class="links">
+            <a href="/movie.html" class="card-link">
+                <div class="icon">🎥</div>
+                <h2>Movies</h2>
+                <p>Latest films & blockbusters</p>
+            </a>
+            <a href="/tvshow.html" class="card-link">
+                <div class="icon">📺</div>
+                <h2>TV Shows</h2>
+                <p>Popular series & episodes</p>
+            </a>
+        </div>
+        <footer>
+            <p>Powered by MovieCloud API</p>
+        </footer>
+    </div>
+</body>
+</html>
