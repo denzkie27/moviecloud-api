@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies - Stream</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#fff;font-family:Arial,sans-serif}
+        .header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px;text-align:center;position:sticky;top:0;z-index:100}
+        .header h1{font-size:28px;margin-bottom:10px}
+        .header h1 span{color:#e50914}
+        input{padding:14px;border-radius:25px;border:none;width:80%;max-width:500px;margin:10px;background:#222;color:#fff;font-size:16px}
+        button{padding:10px 20px;margin:5px;border:none;border-radius:20px;cursor:pointer;font-weight:bold;background:#e50914;color:#fff;transition:opacity .2s}
+        button:hover{opacity:0.85}
+        .nav{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+        .nav button{background:#333;font-size:14px}
+        .nav button.active{background:#e50914}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;padding:20px;max-width:1400px;margin:0 auto}
+        .card{background:#1a1a1a;border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;border:2px solid transparent}
+        .card:hover{transform:translateY(-8px);border-color:#e50914;box-shadow:0 10px 30px rgba(229,9,20,0.3)}
+        .card img{width:100%;aspect-ratio:2/3;object-fit:cover;background:#333}
+        .card .info{padding:10px}
+        .card .title{font-size:14px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .card .meta{font-size:11px;color:#999;margin-top:3px}
+        .card .badge{display:inline-block;background:#e50914;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;margin-top:3px}
+        .dbtn{position:absolute;top:10px;right:10px;background:rgba(229,9,20,0.95);color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0;transition:opacity .3s;cursor:pointer;z-index:5}
+        .card:hover .dbtn{opacity:1}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:1000}
+        .modal-content{width:95%;max-width:1100px;margin:15px auto;background:#000;border-radius:12px;overflow:hidden;position:relative}
+        .close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.8);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-size:22px;border:2px solid rgba(255,255,255,0.3)}
+        .close:hover{background:#e50914}
+        video{width:100%;max-height:70vh;background:#000;display:block}
+        .controls{padding:15px 20px;background:#111;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+        .qbtn{background:#333;color:#fff;padding:8px 18px;border-radius:20px;cursor:pointer;font-size:13px;border:none;transition:background .2s}
+        .qbtn:hover,.qbtn.active{background:#e50914}
+        .dlbtn{background:#28a745!important;font-weight:bold}
+        .dlbtn:hover{background:#1e7e34!important}
+        .dmodal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:2000;justify-content:center;align-items:center}
+        .dbox{background:#1a1a1a;padding:35px;border-radius:20px;text-align:center;min-width:350px;border:2px solid #333}
+        .dbox h3{margin-bottom:10px}
+        .bar{width:100%;height:28px;background:#333;border-radius:14px;overflow:hidden;margin:15px 0}
+        .fill{height:100%;background:linear-gradient(90deg,#e50914,#ff4444);width:0%;transition:width .3s;border-radius:14px}
+        .loading-text{text-align:center;padding:60px;color:#666;font-size:18px}
+        .spinner{display:inline-block;width:40px;height:40px;border:3px solid #333;border-top-color:#e50914;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        select{padding:8px 15px;border-radius:10px;background:#333;color:#fff;border:1px solid #555;margin:10px}
+        @media(max-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px}.modal-content{margin:5px auto}.dbox{min-width:280px;padding:25px}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎬 <span>Movies</span></h1>
+        <input type="text" id="search" placeholder="Search movies..." onkeypress="if(event.key==='Enter')searchMovies(this.value)">
+        <div class="nav">
+            <button onclick="loadMovies('home')" class="active" id="btnHome">🏠 Featured</button>
+            <button onclick="loadMovies('movies')" id="btnMovies">🎥 All Movies</button>
+            <button onclick="loadMovies('animation')" id="btnAnim">✨ Animation</button>
+        </div>
+    </div>
+
+    <div class="grid" id="grid"><div class="loading-text"><div class="spinner"></div>Loading movies...</div></div>
+
+    <!-- Player Modal -->
+    <div class="modal" id="playerModal">
+        <div class="modal-content">
+            <span class="close" onclick="closePlayer()">✕</span>
+            <video id="video" controls autoplay></video>
+            <div class="controls" id="controls">
+                <span style="color:#fff;">🎬 Movie Player</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Modal -->
+    <div class="dmodal" id="dmodal">
+        <div class="dbox">
+            <h3>⬇️ Downloading Movie</h3>
+            <p id="dtitle" style="color:#ccc;"></p>
+            <select id="dq" onchange="dqual=this.value">
+                <option value="360p">360p</option>
+                <option value="480p" selected>480p</option>
+                <option value="720p">720p</option>
+            </select>
+            <div class="bar"><div class="fill" id="fill"></div></div>
+            <p id="dstats" style="color:#999;">Preparing...</p>
+            <p id="dspeed" style="color:#999;"></p>
+            <button onclick="cancelDL()" style="background:#dc3545;margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://moviecloud-api.onrender.com'; // CHANGE THIS TO YOUR IP
+        let streams = [], movie = null, dc = null, dqual = '480p', activeQ = null;
+
+        window.onload = () => loadMovies('home');
+
+        function setActiveBtn(id) {
+            ['btnHome','btnMovies','btnAnim'].forEach(b => {
+                const el = document.getElementById(b);
+                if (el) el.classList.remove('active');
+            });
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.add('active');
+        }
+
+        async function loadMovies(type) {
+            setActiveBtn(type === 'home' ? 'btnHome' : type === 'movies' ? 'btnMovies' : 'btnAnim');
+            const g = document.getElementById('grid');
+            g.innerHTML = '<div class="loading-text"><div class="spinner"></div>Loading...</div>';
+            try {
+                let d;
+                if (type === 'home') { const r = await fetch(API + '/home'); d = await r.json(); showMovies(d); }
+                else if (type === 'movies') { const r = await fetch(API + '/movies'); d = await r.json(); showItems(d.items); }
+                else { const r = await fetch(API + '/animation'); d = await r.json(); showItems(d.items); }
+            } catch (e) {
+                g.innerHTML = '<div class="loading-text" style="color:red;">Error loading. Check API.</div>';
+                console.error(e);
+            }
+        }
+
+        function showMovies(d) {
+            const g = document.getElementById('grid'); g.innerHTML = '';
+            if (d.sections) d.sections.forEach(s => { if (s.items) s.items.forEach(m => { if (m.poster_url) g.appendChild(card(m)); }); });
+        }
+
+        function showItems(items) {
+            const g = document.getElementById('grid'); g.innerHTML = '';
+            if (items) items.forEach(m => { if (m.poster_url) g.appendChild(card(m)); });
+        }
+
+        function card(m) {
+            const c = document.createElement('div'); c.className = 'card';
+            const db = document.createElement('span'); db.className = 'dbtn'; db.textContent = '⬇'; db.title = 'Download';
+            db.onclick = e => { e.stopPropagation(); startDL(m); };
+            c.appendChild(db);
+            const co = document.createElement('div'); co.onclick = () => playMovie(m);
+            co.innerHTML = `<img src="${m.poster_url}" onerror="this.style.background='#333'" loading="lazy">
+                <div class="info"><div class="title">${m.name || 'Unknown'}</div>
+                <div class="meta">${m.year || ''} ${m.rating ? '⭐' + m.rating : ''}</div>
+                ${m.badge ? `<span class="badge">${m.badge}</span>` : ''}</div>`;
+            c.appendChild(co); return c;
+        }
+
+        async function searchMovies(q) {
+            if (!q) return;
+            document.getElementById('grid').innerHTML = '<div class="loading-text"><div class="spinner"></div>Searching...</div>';
+            try {
+                const r = await fetch(API + '/search?q=' + encodeURIComponent(q));
+                const d = await r.json();
+                if (d.items && d.items.length) showItems(d.items);
+                else document.getElementById('grid').innerHTML = '<div class="loading-text">No results for "' + q + '"</div>';
+            } catch (e) {
+                document.getElementById('grid').innerHTML = '<div class="loading-text" style="color:red;">Search failed</div>';
+            }
+        }
+
+        async function playMovie(m) {
+            if (!m.subject_id || !m.slug) { alert('Cannot play this movie'); return; }
+            movie = m;
+            document.getElementById('playerModal').style.display = 'block';
+            document.getElementById('controls').innerHTML = '<span style="color:#fff;">🎬 Loading streams for ' + (m.name || 'movie') + '...</span>';
+            await fetchStreams(m.subject_id, m.slug);
+        }
+
+        async function fetchStreams(sid, slug) {
+            const ctr = document.getElementById('controls');
+            try {
+                const r = await fetch(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`);
+                const d = await r.json();
+                console.log('Stream data:', d);
+                
+                if (d.sources && d.sources.length) {
+                    streams = d.sources;
+                    ctr.innerHTML = '<span style="color:#fff;">🎬 ' + (movie?.name || 'Movie') + '</span>';
+                    
+                    const ql = document.createElement('span'); ql.style.cssText = 'color:#fff;margin:0 8px;'; ql.textContent = 'Quality:'; ctr.appendChild(ql);
+                    
+                    // Create quality buttons
+                    d.sources.forEach((s, i) => {
+                        const b = document.createElement('button'); b.className = 'qbtn';
+                        b.textContent = s.resolution || '?';
+                        b.onclick = () => {
+                            if (activeQ) activeQ.classList.remove('active');
+                            b.classList.add('active'); activeQ = b;
+                            playStream(i);
+                        };
+                        ctr.appendChild(b);
+                    });
+                    
+                    // Download button
+                    const dl = document.createElement('button'); dl.className = 'qbtn dlbtn'; dl.textContent = '⬇️ Download';
+                    dl.onclick = () => {
+                        document.getElementById('playerModal').style.display = 'none';
+                        dqual = streams[streams.length - 1].resolution || '480p';
+                        startDL(movie);
+                    };
+                    ctr.appendChild(dl);
+                    
+                    // Auto-select highest quality and play
+                    const bestIdx = d.sources.length - 1;
+                    const bestBtn = ctr.querySelectorAll('.qbtn:not(.dlbtn)')[bestIdx];
+                    if (bestBtn) {
+                        bestBtn.classList.add('active');
+                        activeQ = bestBtn;
+                    }
+                    playStream(bestIdx); // Auto-play the best quality
+                    
+                } else if (d.dash && d.dash.length) {
+                    streams = d.dash;
+                    ctr.innerHTML = '<span style="color:#fff;">🎬 DASH stream available</span>';
+                    const b = document.createElement('button'); b.className = 'qbtn'; b.textContent = 'Play DASH';
+                    b.onclick = () => playStream(0); ctr.appendChild(b);
+                    playStream(0);
+                } else {
+                    ctr.innerHTML = '<span style="color:red;">❌ No streams available for this movie</span>';
+                }
+            } catch (e) {
+                ctr.innerHTML = '<span style="color:red;">Failed to load streams</span>';
+                console.error(e);
+            }
+        }
+
+        function playStream(i) {
+            const v = document.getElementById('video');
+            if (streams[i] && movie) {
+                const q = streams[i].resolution || '480p';
+                const url = `${API}/stream-proxy/${movie.subject_id}?detail_path=${encodeURIComponent(movie.slug)}&quality=${q}&se=0&ep=0`;
+                console.log('▶️ Playing:', url);
+                v.src = url;
+                v.load();
+                v.play().catch(e => console.log('Autoplay prevented, click play button'));
+            } else {
+                console.error('Missing stream or movie data');
+            }
+        }
+
+        function closePlayer() {
+            document.getElementById('playerModal').style.display = 'none';
+            const v = document.getElementById('video'); v.pause(); v.src = '';
+            streams = []; movie = null; activeQ = null;
+        }
+
+        function startDL(m) {
+            if (!m.subject_id || !m.slug) { alert('Cannot download'); return; }
+            movie = m;
+            document.getElementById('dmodal').style.display = 'flex';
+            document.getElementById('dtitle').textContent = m.name || 'Movie';
+            dl(m);
+        }
+
+        async function dl(m) {
+            const f = document.getElementById('fill'), s = document.getElementById('dstats'), sp = document.getElementById('dspeed');
+            f.style.width = '0%'; s.textContent = 'Starting...'; sp.textContent = '';
+            const url = `${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=0&ep=0`;
+            dc = new AbortController();
+            try {
+                const r = await fetch(url, { signal: dc.signal });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const total = parseInt(r.headers.get('content-length')) || 0;
+                const reader = r.body.getReader(); const chunks = [];
+                let dl = 0, lt = Date.now(), ld = 0;
+                while (true) {
+                    const { done, value } = await reader.read(); if (done) break;
+                    chunks.push(value); dl += value.length;
+                    const now = Date.now();
+                    if (now - lt > 1000) {
+                        const speed = (dl - ld) / ((now - lt) / 1000), pct = total ? (dl / total) * 100 : 0;
+                        f.style.width = Math.min(pct, 100) + '%';
+                        s.textContent = total ? `${(dl/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)` : `${(dl/(1024*1024)).toFixed(1)} MB`;
+                        sp.textContent = `⚡ ${(speed/(1024*1024)).toFixed(2)} MB/s`;
+                        lt = now; ld = dl;
+                    }
+                }
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                a.download = `${(m.name || 'movie').replace(/[^a-z0-9]/gi, '_')}_${dqual}.mp4`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                s.textContent = '✅ Download Complete!'; sp.textContent = '';
+                setTimeout(() => { document.getElementById('dmodal').style.display = 'none'; }, 2000);
+            } catch (e) {
+                if (e.name !== 'AbortError') alert('Download failed: ' + e.message);
+                document.getElementById('dmodal').style.display = 'none';
+            }
+        }
+
+        function cancelDL() { if (dc) dc.abort(); document.getElementById('dmodal').style.display = 'none'; }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
+        document.getElementById('playerModal').addEventListener('click', function(e) { if (e.target === this) closePlayer(); });
+    </script>
+</body>
+</html>

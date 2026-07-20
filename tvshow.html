@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Shows - Stream</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#fff;font-family:Arial,sans-serif}
+        .header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px;text-align:center;position:sticky;top:0;z-index:100}
+        .header h1{font-size:28px;margin-bottom:10px}
+        .header h1 span{color:#e50914}
+        input{padding:14px;border-radius:25px;border:none;width:80%;max-width:500px;margin:10px;background:#222;color:#fff;font-size:16px}
+        button{padding:10px 20px;margin:5px;border:none;border-radius:20px;cursor:pointer;font-weight:bold;background:#e50914;color:#fff;transition:opacity .2s}
+        button:hover{opacity:0.85}
+        .nav{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+        .nav button{background:#333;font-size:14px}
+        .nav button.active{background:#e50914}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;padding:20px;max-width:1400px;margin:0 auto}
+        .card{background:#1a1a1a;border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;border:2px solid transparent}
+        .card:hover{transform:translateY(-8px);border-color:#e50914;box-shadow:0 10px 30px rgba(229,9,20,0.3)}
+        .card img{width:100%;aspect-ratio:2/3;object-fit:cover;background:#333}
+        .card .info{padding:10px}
+        .card .title{font-size:14px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .card .meta{font-size:11px;color:#999;margin-top:3px}
+        .card .badge{display:inline-block;background:#e50914;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;margin-top:3px}
+        .dbtn{position:absolute;top:10px;right:10px;background:rgba(229,9,20,0.95);color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0;transition:opacity .3s;cursor:pointer;z-index:5}
+        .card:hover .dbtn{opacity:1}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:1000}
+        .modal-content{width:95%;max-width:1100px;margin:15px auto;background:#000;border-radius:12px;overflow:hidden;position:relative}
+        .close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.8);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-size:22px;border:2px solid rgba(255,255,255,0.3)}
+        .close:hover{background:#e50914}
+        video{width:100%;max-height:70vh;background:#000;display:block}
+        .controls{padding:15px 20px;background:#111;display:flex;gap:10px;flex-wrap:wrap;align-items:center;max-height:250px;overflow-y:auto}
+        .qbtn{background:#333;color:#fff;padding:8px 18px;border-radius:20px;cursor:pointer;font-size:13px;border:none;transition:background .2s}
+        .qbtn:hover,.qbtn.active{background:#e50914}
+        .epbtn{background:#ff6b00!important}
+        .epbtn:hover{background:#e05d00!important}
+        .dlbtn{background:#28a745!important;font-weight:bold}
+        .dlbtn:hover{background:#1e7e34!important}
+        .season-label{color:#e50914;font-weight:bold;margin:8px 5px 0 0;width:100%;font-size:13px}
+        .dmodal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:2000;justify-content:center;align-items:center}
+        .dbox{background:#1a1a1a;padding:35px;border-radius:20px;text-align:center;min-width:350px;border:2px solid #333}
+        .dbox h3{margin-bottom:10px}
+        .bar{width:100%;height:28px;background:#333;border-radius:14px;overflow:hidden;margin:15px 0}
+        .fill{height:100%;background:linear-gradient(90deg,#e50914,#ff4444);width:0%;transition:width .3s;border-radius:14px}
+        .loading-text{text-align:center;padding:60px;color:#666;font-size:18px}
+        .spinner{display:inline-block;width:40px;height:40px;border:3px solid #333;border-top-color:#e50914;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        select{padding:8px 15px;border-radius:10px;background:#333;color:#fff;border:1px solid #555;margin:10px}
+        @media(max-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px}.modal-content{margin:5px auto}.dbox{min-width:280px;padding:25px}.epbtn{font-size:10px!important;padding:5px 8px!important}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📺 <span>TV Shows</span></h1>
+        <input type="text" id="search" placeholder="Search TV shows..." onkeypress="if(event.key==='Enter')searchShows(this.value)">
+        <div class="nav">
+            <button onclick="loadShows('home')" class="active" id="btnHome">🏠 Featured</button>
+            <button onclick="loadShows('tv-series')" id="btnTV">📺 All TV Shows</button>
+        </div>
+    </div>
+
+    <div class="grid" id="grid"><div class="loading-text"><div class="spinner"></div>Loading TV shows...</div></div>
+
+    <!-- Player Modal -->
+    <div class="modal" id="playerModal">
+        <div class="modal-content">
+            <span class="close" onclick="closePlayer()">✕</span>
+            <video id="video" controls autoplay></video>
+            <div class="controls" id="controls">
+                <span style="color:#fff;">📺 Select an episode</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Modal -->
+    <div class="dmodal" id="dmodal">
+        <div class="dbox">
+            <h3>⬇️ Downloading Episode</h3>
+            <p id="dtitle" style="color:#ccc;"></p>
+            <select id="dq" onchange="dqual=this.value">
+                <option value="360p">360p</option>
+                <option value="480p" selected>480p</option>
+                <option value="720p">720p</option>
+            </select>
+            <div class="bar"><div class="fill" id="fill"></div></div>
+            <p id="dstats" style="color:#999;">Preparing...</p>
+            <p id="dspeed" style="color:#999;"></p>
+            <button onclick="cancelDL()" style="background:#dc3545;margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://moviecloud-api.onrender.com'; // CHANGE THIS
+        let streams=[], show=null, dc=null, dqual='480p', activeQ=null;
+        let currentSe=1, currentEp=1;
+
+        window.onload=()=>loadShows('home');
+
+        function setActiveBtn(id){
+            ['btnHome','btnTV'].forEach(b=>{
+                const el=document.getElementById(b);
+                if(el)el.classList.remove('active');
+            });
+            const btn=document.getElementById(id);
+            if(btn)btn.classList.add('active');
+        }
+
+        async function loadShows(type){
+            setActiveBtn(type==='home'?'btnHome':'btnTV');
+            const g=document.getElementById('grid');
+            g.innerHTML='<div class="loading-text"><div class="spinner"></div>Loading...</div>';
+            try{
+                let d;
+                if(type==='home'){const r=await fetch(API+'/home');d=await r.json();showShows(d);}
+                else{const r=await fetch(API+'/tv-series');d=await r.json();showItems(d.items);}
+            }catch(e){g.innerHTML='<div class="loading-text" style="color:red;">Error loading</div>';}
+        }
+
+        function showShows(d){
+            const g=document.getElementById('grid');g.innerHTML='';
+            if(d.sections)d.sections.forEach(s=>{if(s.items)s.items.forEach(m=>{if(m.poster_url)g.appendChild(card(m));});});
+        }
+
+        function showItems(items){
+            const g=document.getElementById('grid');g.innerHTML='';
+            if(items)items.forEach(m=>{if(m.poster_url)g.appendChild(card(m));});
+        }
+
+        function card(m){
+            const c=document.createElement('div');c.className='card';
+            const db=document.createElement('span');db.className='dbtn';db.textContent='⬇';db.title='Download latest';
+            db.onclick=e=>{e.stopPropagation();show=m;currentSe=1;currentEp=1;startDL(show);};
+            c.appendChild(db);
+            const co=document.createElement('div');co.onclick=()=>openShow(m);
+            co.innerHTML=`<img src="${m.poster_url}" onerror="this.style.background='#333'" loading="lazy">
+                <div class="info"><div class="title">${m.name||'Unknown'}</div>
+                <div class="meta">${m.year||''} ${m.rating?'⭐'+m.rating:''}</div>
+                ${m.badge?`<span class="badge">${m.badge}</span>`:''}</div>`;
+            c.appendChild(co);return c;
+        }
+
+        async function searchShows(q){
+            if(!q)return;
+            document.getElementById('grid').innerHTML='<div class="loading-text"><div class="spinner"></div>Searching...</div>';
+            try{
+                const r=await fetch(API+'/search?q='+encodeURIComponent(q));
+                const d=await r.json();
+                if(d.items&&d.items.length)showItems(d.items);
+                else document.getElementById('grid').innerHTML='<div class="loading-text">No results for "'+q+'"</div>';
+            }catch(e){document.getElementById('grid').innerHTML='<div class="loading-text" style="color:red;">Search failed</div>';}
+        }
+
+        async function openShow(m){
+            if(!m.subject_id||!m.slug){alert('Cannot play this show');return;}
+            show=m;
+            document.getElementById('playerModal').style.display='block';
+            document.getElementById('controls').innerHTML='<span style="color:#fff;">📺 '+ (m.name||'TV Show') +' - Loading episodes...</span>';
+            await loadEpisodes(m.subject_id,m.slug);
+        }
+
+        async function loadEpisodes(sid,slug){
+            const ctr=document.getElementById('controls');
+            try{
+                const r=await fetch(`${API}/api/episodes/${sid}?detail_path=${encodeURIComponent(slug)}`);
+                const d=await r.json();
+                
+                if(d.episodes&&d.episodes.length>0){
+                    ctr.innerHTML=`<span style="color:#fff;width:100%;">📺 ${show?.name||'TV Show'} - Select Episode:</span>`;
+                    
+                    // Group by season
+                    const seasons={};
+                    d.episodes.forEach(e=>{
+                        if(!seasons[e.season])seasons[e.season]=[];
+                        seasons[e.season].push(e);
+                    });
+                    
+                    for(const[sn,eps]of Object.entries(seasons)){
+                        const sl=document.createElement('span');
+                        sl.className='season-label';
+                        sl.textContent=`📁 Season ${sn}:`;
+                        ctr.appendChild(sl);
+                        
+                        eps.slice(0,20).forEach(e=>{
+                            const b=document.createElement('button');
+                            b.className='qbtn epbtn';
+                            b.style.cssText='font-size:11px;padding:6px 12px;';
+                            b.textContent=`E${e.episode}`;
+                            b.title=e.title||'';
+                            b.onclick=()=>{
+                                currentSe=e.season;
+                                currentEp=e.episode;
+                                loadStream(sid,slug,e.season,e.episode);
+                            };
+                            ctr.appendChild(b);
+                        });
+                    }
+                }else{
+                    ctr.innerHTML='<span style="color:red;">No episodes found. This might not be a TV series.</span>';
+                }
+            }catch(e){
+                ctr.innerHTML='<span style="color:red;">Failed to load episodes</span>';
+            }
+        }
+
+        async function loadStream(sid,slug,se,ep){
+            const ctr=document.getElementById('controls');
+            ctr.innerHTML=`<span style="color:#fff;">📺 S${se}E${ep} - Loading streams...</span>`;
+            
+            try{
+                const r=await fetch(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=${se}&ep=${ep}`);
+                const d=await r.json();
+                
+                if(d.sources&&d.sources.length){
+                    streams=d.sources;
+                    ctr.innerHTML=`<span style="color:#fff;font-weight:bold;">📺 S${se} E${ep}</span>`;
+                    
+                    // Episode navigation
+                    const prevBtn=document.createElement('button');
+                    prevBtn.className='qbtn';prevBtn.textContent='◀ Prev';
+                    prevBtn.onclick=()=>{if(currentEp>1){currentEp--;loadStream(sid,slug,currentSe,currentEp);}};
+                    ctr.appendChild(prevBtn);
+                    
+                    const nextBtn=document.createElement('button');
+                    nextBtn.className='qbtn';nextBtn.textContent='Next ▶';
+                    nextBtn.onclick=()=>{currentEp++;loadStream(sid,slug,currentSe,currentEp);};
+                    ctr.appendChild(nextBtn);
+                    
+                    const epListBtn=document.createElement('button');
+                    epListBtn.className='qbtn epbtn';epListBtn.textContent='📋 All Episodes';
+                    epListBtn.onclick=()=>loadEpisodes(sid,slug);
+                    ctr.appendChild(epListBtn);
+                    
+                    // Quality
+                    const ql=document.createElement('span');ql.style.cssText='color:#fff;margin:0 8px;';ql.textContent='Quality:';ctr.appendChild(ql);
+                    
+                    d.sources.forEach((s,i)=>{
+                        const b=document.createElement('button');b.className='qbtn';
+                        b.textContent=s.resolution||'?';
+                        b.onclick=()=>{
+                            if(activeQ)activeQ.classList.remove('active');
+                            b.classList.add('active');activeQ=b;
+                            playStream(i);
+                        };
+                        ctr.appendChild(b);
+                    });
+                    
+                    // Download
+                    const dl=document.createElement('button');dl.className='qbtn dlbtn';dl.textContent='⬇️ Download';
+                    dl.onclick=()=>{
+                        document.getElementById('playerModal').style.display='none';
+                        dqual=streams[streams.length-1].resolution||'480p';
+                        startDL(show);
+                    };
+                    ctr.appendChild(dl);
+                    
+                    playStream(d.sources.length-1);
+                    
+                }else{
+                    ctr.innerHTML=`<span style="color:red;">❌ No streams for S${se}E${ep}</span>`;
+                    const back=document.createElement('button');back.className='qbtn';back.textContent='← Back to Episodes';
+                    back.onclick=()=>loadEpisodes(sid,slug);ctr.appendChild(back);
+                }
+            }catch(e){ctr.innerHTML='<span style="color:red;">Failed to load stream</span>';}
+        }
+
+        function playStream(i){
+            const v=document.getElementById('video');
+            if(streams[i]&&show){
+                const q=streams[i].resolution||'480p';
+                const url=`${API}/stream-proxy/${show.subject_id}?detail_path=${encodeURIComponent(show.slug)}&quality=${q}&se=${currentSe}&ep=${currentEp}`;
+                console.log(`▶️ S${currentSe}E${currentEp} [${q}]`);
+                v.src=url;v.load();v.play().catch(()=>{});
+            }
+        }
+
+        function closePlayer(){
+            document.getElementById('playerModal').style.display='none';
+            const v=document.getElementById('video');v.pause();v.src='';
+            streams=[];show=null;activeQ=null;
+        }
+
+        function startDL(m){
+            if(!m?.subject_id||!m?.slug){alert('Cannot download');return;}
+            show=m;
+            document.getElementById('dmodal').style.display='flex';
+            document.getElementById('dtitle').textContent=`${m.name||'Show'} - S${currentSe}E${currentEp}`;
+            dl(m);
+        }
+
+        async function dl(m){
+            const f=document.getElementById('fill'),s=document.getElementById('dstats'),sp=document.getElementById('dspeed');
+            f.style.width='0%';s.textContent='Starting...';sp.textContent='';
+            const url=`${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=${currentSe}&ep=${currentEp}`;
+            dc=new AbortController();
+            try{
+                const r=await fetch(url,{signal:dc.signal});
+                if(!r.ok)throw new Error('HTTP '+r.status);
+                const total=parseInt(r.headers.get('content-length'))||0;
+                const reader=r.body.getReader();const chunks=[];
+                let dl=0,lt=Date.now(),ld=0;
+                while(true){
+                    const{done,value}=await reader.read();if(done)break;
+                    chunks.push(value);dl+=value.length;
+                    const now=Date.now();
+                    if(now-lt>1000){
+                        const speed=(dl-ld)/((now-lt)/1000),pct=total?(dl/total)*100:0;
+                        f.style.width=Math.min(pct,100)+'%';
+                        s.textContent=total?`${(dl/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)`:`${(dl/(1024*1024)).toFixed(1)} MB`;
+                        sp.textContent=`⚡ ${(speed/(1024*1024)).toFixed(2)} MB/s`;
+                        lt=now;ld=dl;
+                    }
+                }
+                const blob=new Blob(chunks,{type:'video/mp4'});
+                const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+                a.download=`${(m.name||'show').replace(/[^a-z0-9]/gi,'_')}_S${currentSe}E${currentEp}_${dqual}.mp4`;
+                document.body.appendChild(a);a.click();document.body.removeChild(a);
+                s.textContent='✅ Download Complete!';sp.textContent='';
+                setTimeout(()=>{document.getElementById('dmodal').style.display='none';},2000);
+            }catch(e){
+                if(e.name!=='AbortError')alert('Download failed: '+e.message);
+                document.getElementById('dmodal').style.display='none';
+            }
+        }
+
+        function cancelDL(){if(dc)dc.abort();document.getElementById('dmodal').style.display='none';}
+        document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
+        document.getElementById('playerModal').addEventListener('click',function(e){if(e.target===this)closePlayer();});
+    </script>
+</body>
+</html>
