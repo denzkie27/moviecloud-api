@@ -183,20 +183,57 @@ async def root():
 # ===== STREAM PROXY =====
 @app.get("/stream-proxy/{sid}")
 async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: int = 0, ep: int = 0):
-    data, ref = await _get_stream_data(sid, detail_path, se, ep)
-    streams = data.get("streams", [])
-    if not streams:
-        raise HTTPException(404, "No streams available for this content")
-    q = quality.replace("p", "")
-    sel = next((s for s in streams if s.get("resolutions") == q), streams[-1])
-    if not sel.get("url"):
-        raise HTTPException(404, "No stream URL found")
-    async def gen():
-        async with httpx.AsyncClient(follow_redirects=True, timeout=300) as c:
-            async with c.stream("GET", sel["url"], headers={**PLAYER_HEADERS, "Referer": ref}) as r2:
-                async for chunk in r2.aiter_bytes(1048576):
-                    yield chunk
-    return StreamingResponse(gen(), media_type="video/mp4")
+    try:
+        data, ref = await _get_stream_data(sid, detail_path, se, ep)
+        streams = data.get("streams", [])
+        
+        # Also check DASH if MP4 not available
+        dash_sources = data.get("dash", [])
+        
+        # If no MP4 streams but DASH available, try DASH
+        if not streams and dash_sources:
+            # Return DASH manifest directly
+            dash_url = dash_sources[0].get("url")
+            if dash_url:
+                async def gen_dash():
+                    async with httpx.AsyncClient(follow_redirects=True, timeout=300) as c:
+                        async with c.stream("GET", dash_url, headers={**PLAYER_HEADERS, "Referer": ref}) as r2:
+                            async for chunk in r2.aiter_bytes(1048576):
+                                yield chunk
+                return StreamingResponse(gen_dash(), media_type="application/dash+xml")
+        
+        if not streams:
+            raise HTTPException(404, f"No streams available. has_resource: {data.get('hasResource')}")
+        
+        q = quality.replace("p", "")
+        sel = next((s for s in streams if s.get("resolutions") == q), streams[-1])
+        
+        if not sel.get("url"):
+            raise HTTPException(404, "No stream URL found")
+        
+        logger.info(f"Streaming: {sel.get('resolution')} from {sel.get('url')[:80]}...")
+        
+        async def gen():
+            async with httpx.AsyncClient(follow_redirects=True, timeout=300, verify=False) as c:
+                stream_headers = {
+                    **PLAYER_HEADERS,
+                    "Referer": ref,
+                    "Origin": "https://netfilm.world",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+                }
+                async with c.stream("GET", sel["url"], headers=stream_headers) as r2:
+                    logger.info(f"CDN response: {r2.status_code}")
+                    if r2.status_code != 200:
+                        raise HTTPException(502, f"CDN returned {r2.status_code}")
+                    async for chunk in r2.aiter_bytes(1048576):
+                        yield chunk
+        
+        return StreamingResponse(gen(), media_type="video/mp4")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Stream proxy error: {e}")
+        raise HTTPException(500, str(e))
 
 # ===== DOWNLOAD =====
 @app.get("/download/{sid}")
