@@ -156,11 +156,10 @@ async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: in
     try:
         data, domain = await _get_stream_data(sid, detail_path, se, ep)
 
-        # --- PRIORITY 1: DASH (most reliable) ---
+        # --- Try DASH first ---
         dash_sources = data.get("dash", [])
         if dash_sources:
             q = quality.replace("p", "")
-            # pick matching quality or best
             sel = next((s for s in dash_sources if q in str(s.get("resolutions", ""))), dash_sources[-1])
             dash_url = sel.get("url")
             if dash_url:
@@ -178,17 +177,26 @@ async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: in
                                 yield chunk
                 return StreamingResponse(gen_dash(), media_type="application/dash+xml")
 
-        # --- PRIORITY 2: MP4 (direct redirect with proper Referer) ---
+        # --- MP4 – proxy instead of redirect ---
         mp4_streams = data.get("streams", [])
         if mp4_streams:
             q = quality.replace("p", "")
             sel = next((s for s in mp4_streams if s.get("resolutions") == q), mp4_streams[-1])
             mp4_url = sel.get("url")
             if mp4_url:
-                logger.info(f"Redirecting to MP4 {sel.get('resolution')}")
-                # Instead of proxying, we redirect the player directly.
-                # The player (browser) will send its own Referer (the player page) and the CDN will accept it.
-                return RedirectResponse(url=mp4_url, status_code=302)
+                logger.info(f"Proxying MP4 {sel.get('resolution')}")
+                async def gen_mp4():
+                    cdn_headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                        "Accept": "*/*",
+                        "Referer": f"{domain}/",
+                        "Origin": domain,
+                    }
+                    async with httpx.AsyncClient(follow_redirects=True, timeout=300, verify=False) as c:
+                        async with c.stream("GET", mp4_url, headers=cdn_headers) as r2:
+                            async for chunk in r2.aiter_bytes(1048576):
+                                yield chunk
+                return StreamingResponse(gen_mp4(), media_type="video/mp4")
 
         raise HTTPException(404, "No streams available")
 
