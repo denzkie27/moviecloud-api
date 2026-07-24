@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YOURTV - Stream Premium Movies</title>
-    <script src="https://cdn.dashjs.org/latest/dash.all.min.js">
-    </script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <style>
         :root {
             --bg: #060609;
@@ -91,13 +90,8 @@
             animation: logoPulse 3s ease-in-out infinite;
         }
         @keyframes logoPulse {
-            0%,
-            100% {
-                box-shadow: 0 4px 20px var(--glow);
-            }
-            50% {
-                box-shadow: 0 6px 32px rgba(229, 9, 20, 0.45);
-            }
+            0%, 100% { box-shadow: 0 4px 20px var(--glow); }
+            50% { box-shadow: 0 6px 32px rgba(229, 9, 20, 0.45); }
         }
         .brand h1 {
             font-size: 22px;
@@ -215,28 +209,11 @@
         }
 
         @media (max-width: 768px) {
-            .header {
-                padding: 12px 14px;
-                gap: 10px;
-            }
-            .brand h1 {
-                font-size: 18px;
-            }
-            .brand .logo-icon {
-                width: 34px;
-                height: 34px;
-                font-size: 17px;
-                border-radius: 10px;
-            }
-            .search-wrap {
-                order: 3;
-                flex: 1 1 100%;
-                max-width: 100%;
-            }
-            .nav button {
-                padding: 8px 13px;
-                font-size: 12px;
-            }
+            .header { padding: 12px 14px; gap: 10px; }
+            .brand h1 { font-size: 18px; }
+            .brand .logo-icon { width: 34px; height: 34px; font-size: 17px; border-radius: 10px; }
+            .search-wrap { order: 3; flex: 1 1 100%; max-width: 100%; }
+            .nav button { padding: 8px 13px; font-size: 12px; }
         }
 
         /* ── GRID ──────────────────────── */
@@ -249,11 +226,7 @@
             margin: 0 auto;
         }
         @media (max-width: 600px) {
-            .grid {
-                grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-                gap: 14px;
-                padding: 14px;
-            }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 14px; padding: 14px; }
         }
 
         .card {
@@ -273,10 +246,7 @@
             box-shadow: 0 18px 40px rgba(229, 9, 20, 0.2), 0 4px 16px rgba(0, 0, 0, 0.5);
             z-index: 5;
         }
-        .card:active {
-            transform: scale(0.97);
-            transition: 0.1s;
-        }
+        .card:active { transform: scale(0.97); transition: 0.1s; }
         .card img {
             width: 100%;
             aspect-ratio: 2/3;
@@ -285,12 +255,8 @@
             display: block;
             transition: var(--transition);
         }
-        .card:hover img {
-            filter: brightness(1.1);
-        }
-        .card .info {
-            padding: 12px 14px;
-        }
+        .card:hover img { filter: brightness(1.1); }
+        .card .info { padding: 12px 14px; }
         .card .title {
             font-size: 13px;
             font-weight: 700;
@@ -300,18 +266,8 @@
             color: #fff;
             letter-spacing: 0.1px;
         }
-        .card .meta {
-            font-size: 11px;
-            color: var(--text2);
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .card .meta .star {
-            color: var(--gold);
-            font-size: 12px;
-        }
+        .card .meta { font-size: 11px; color: var(--text2); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+        .card .meta .star { color: var(--gold); font-size: 12px; }
         .card .badge {
             display: inline-block;
             background: linear-gradient(135deg, var(--accent), #c0030b);
@@ -323,14 +279,12 @@
             margin-top: 5px;
             letter-spacing: 0.3px;
         }
-        .card .badge.gold {
-            background: linear-gradient(135deg, var(--gold), #b8861e);
-        }
+        .card .badge.gold { background: linear-gradient(135deg, var(--gold), #b8861e); }
         .dbtn {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0,0,0,0.75);
             backdrop-filter: blur(8px);
             color: #fff;
             width: 36px;
@@ -344,11 +298,9 @@
             transition: var(--transition);
             cursor: pointer;
             z-index: 5;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255,255,255,0.2);
         }
-        .card:hover .dbtn {
-            opacity: 1;
-        }
+        .card:hover .dbtn { opacity: 1; }
         .dbtn:hover {
             background: var(--accent);
             border-color: var(--accent);
@@ -364,20 +316,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.96);
+            background: rgba(0,0,0,0.96);
             z-index: 1000;
             overflow-y: auto;
             overflow-x: hidden;
             animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .modal-content {
             width: 100%;
             max-width: 1400px;
@@ -387,21 +332,12 @@
             position: relative;
             animation: slideUp 0.35s ease;
         }
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close {
             position: fixed;
             top: 16px;
             right: 16px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.8);
             backdrop-filter: blur(10px);
             color: #fff;
             width: 44px;
@@ -413,7 +349,7 @@
             cursor: pointer;
             z-index: 1010;
             font-size: 22px;
-            border: 2px solid rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255,255,255,0.25);
             transition: var(--transition);
             font-weight: 300;
         }
@@ -433,24 +369,10 @@
             min-height: 55vh;
             max-height: 78vh;
         }
-        @media (min-width: 1200px) {
-            .player-wrapper {
-                min-height: 62vh;
-                max-height: 82vh;
-            }
-        }
+        @media (min-width: 1200px) { .player-wrapper { min-height: 62vh; max-height: 82vh; } }
         @media (max-width: 768px) {
-            .player-wrapper {
-                min-height: 38vh;
-                max-height: 55vh;
-            }
-            .close {
-                top: 8px;
-                right: 8px;
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
-            }
+            .player-wrapper { min-height: 38vh; max-height: 55vh; }
+            .close { top: 8px; right: 8px; width: 36px; height: 36px; font-size: 18px; }
         }
         video {
             width: 100%;
@@ -459,16 +381,8 @@
             display: block;
             outline: none;
         }
-        @media (min-width: 1200px) {
-            video {
-                max-height: 82vh;
-            }
-        }
-        @media (max-width: 768px) {
-            video {
-                max-height: 55vh;
-            }
-        }
+        @media (min-width: 1200px) { video { max-height: 82vh; } }
+        @media (max-width: 768px) { video { max-height: 55vh; } }
 
         /* ── CONTROLS BAR ─────────────── */
         .controls-bar {
@@ -522,12 +436,12 @@
         .qbtn.dash-btn:hover {
             background: #7c5cfc;
             border-color: #7c5cfc;
-            box-shadow: 0 4px 18px rgba(124, 92, 252, 0.35);
+            box-shadow: 0 4px 18px rgba(124,92,252,0.35);
         }
         .qbtn.dash-btn.active {
             background: #7c5cfc;
             border-color: #a78bfa;
-            box-shadow: 0 6px 24px rgba(124, 92, 252, 0.45);
+            box-shadow: 0 6px 24px rgba(124,92,252,0.45);
         }
         .dlbtn {
             background: #0d8a3e !important;
@@ -539,7 +453,7 @@
         .dlbtn:hover {
             background: #10a34a !important;
             border-color: #10a34a !important;
-            box-shadow: 0 4px 18px rgba(16, 163, 74, 0.35) !important;
+            box-shadow: 0 4px 18px rgba(16,163,74,0.35) !important;
         }
 
         /* ── MOVIE DETAILS SECTION ────── */
@@ -550,32 +464,18 @@
             gap: 24px;
             flex-wrap: wrap;
         }
-        @media (max-width: 700px) {
-            .movie-details {
-                padding: 16px 14px 30px;
-                gap: 16px;
-            }
-        }
+        @media (max-width: 700px) { .movie-details { padding: 16px 14px 30px; gap: 16px; } }
         .movie-details .detail-poster {
             width: 140px;
             height: 210px;
             border-radius: var(--radius-sm);
             object-fit: cover;
             flex-shrink: 0;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
             border: 2px solid var(--border);
         }
-        @media (max-width: 700px) {
-            .movie-details .detail-poster {
-                width: 100px;
-                height: 150px;
-                border-radius: 8px;
-            }
-        }
-        .movie-details .detail-info {
-            flex: 1;
-            min-width: 240px;
-        }
+        @media (max-width: 700px) { .movie-details .detail-poster { width: 100px; height: 150px; border-radius: 8px; } }
+        .movie-details .detail-info { flex: 1; min-width: 240px; }
         .movie-details .detail-title {
             font-size: 28px;
             font-weight: 800;
@@ -584,11 +484,7 @@
             margin-bottom: 6px;
             line-height: 1.2;
         }
-        @media (max-width: 700px) {
-            .movie-details .detail-title {
-                font-size: 20px;
-            }
-        }
+        @media (max-width: 700px) { .movie-details .detail-title { font-size: 20px; } }
         .movie-details .detail-meta-row {
             display: flex;
             gap: 14px;
@@ -607,16 +503,14 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(245, 197, 24, 0.12);
+            background: rgba(245,197,24,0.12);
             padding: 5px 12px;
             border-radius: 20px;
             font-weight: 700;
             color: var(--gold);
             font-size: 14px;
         }
-        .movie-details .detail-rating .star-icon {
-            font-size: 16px;
-        }
+        .movie-details .detail-rating .star-icon { font-size: 16px; }
         .movie-details .detail-genres {
             display: flex;
             gap: 6px;
@@ -647,15 +541,8 @@
             line-height: 1.5;
             max-width: 700px;
         }
-        .movie-details .detail-cast strong {
-            color: var(--text2);
-            font-weight: 600;
-        }
-        .no-details {
-            color: var(--text3);
-            font-style: italic;
-            padding: 10px 0;
-        }
+        .movie-details .detail-cast strong { color: var(--text2); font-weight: 600; }
+        .no-details { color: var(--text3); font-style: italic; padding: 10px 0; }
 
         /* ── DOWNLOAD MODAL ───────────── */
         .dmodal {
@@ -665,7 +552,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0,0,0,0.9);
             z-index: 2000;
             justify-content: center;
             align-items: center;
@@ -678,20 +565,10 @@
             text-align: center;
             min-width: 360px;
             border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
         }
-        @media (max-width: 600px) {
-            .dbox {
-                min-width: 280px;
-                padding: 24px 18px;
-                border-radius: var(--radius);
-            }
-        }
-        .dbox h3 {
-            margin-bottom: 6px;
-            font-size: 20px;
-            font-weight: 700;
-        }
+        @media (max-width: 600px) { .dbox { min-width: 280px; padding: 24px 18px; border-radius: var(--radius); } }
+        .dbox h3 { margin-bottom: 6px; font-size: 20px; font-weight: 700; }
         .dbox select {
             padding: 10px 16px;
             border-radius: 50px;
@@ -721,14 +598,7 @@
             border-radius: 15px;
             animation: shimmer 2s linear infinite;
         }
-        @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-            100% {
-                background-position: 200% 0;
-            }
-        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .dbox button {
             padding: 10px 22px;
             border-radius: 50px;
@@ -758,11 +628,7 @@
             animation: spin 0.8s linear infinite;
             margin-bottom: 16px;
         }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -770,26 +636,13 @@
             grid-column: 1 / -1;
             font-size: 15px;
         }
-        .empty-state .icon {
-            font-size: 50px;
-            display: block;
-            margin-bottom: 12px;
-        }
+        .empty-state .icon { font-size: 50px; display: block; margin-bottom: 12px; }
 
         /* ── SCROLLBAR ────────────────── */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--surface3);
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
         /* ── TOAST ────────────────────── */
         .toast {
@@ -805,34 +658,15 @@
             font-weight: 600;
             z-index: 3000;
             border: 1px solid var(--border);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
             animation: toastIn 0.4s ease, toastOut 0.4s ease 2.2s forwards;
             pointer-events: none;
         }
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-        @keyframes toastOut {
-            from {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-15px);
-            }
-        }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(-15px); } }
     </style>
 </head>
 <body>
-    <!-- ═══════════ HEADER ═══════════ -->
     <header class="header" id="header">
         <div class="brand">
             <div class="logo-icon">🎬</div>
@@ -842,7 +676,7 @@
             <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
         </a>
         <div class="search-wrap">
-            <input type="text" id="search" placeholder="Search movies &amp; shows..." onkeypress="if(event.key==='Enter')searchMovies(this.value)" oninput="handleSearchInput(this.value)">
+            <input type="text" id="search" placeholder="Search movies & shows..." onkeypress="if(event.key==='Enter')searchMovies(this.value)" oninput="handleSearchInput(this.value)">
             <span class="search-icon">🔍</span>
         </div>
         <nav class="nav">
@@ -852,12 +686,10 @@
         </nav>
     </header>
 
-    <!-- ═══════════ MOVIE GRID ═══════════ -->
     <div class="grid" id="grid">
         <div class="loading-text"><div class="spinner"></div>Loading movies...</div>
     </div>
 
-    <!-- ═══════════ PLAYER MODAL ═══════════ -->
     <div class="modal" id="playerModal">
         <div class="modal-content">
             <span class="close" onclick="closePlayer()" title="Close player">✕</span>
@@ -875,7 +707,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ DOWNLOAD MODAL ═══════════ -->
     <div class="dmodal" id="dmodal">
         <div class="dbox">
             <h3>⬇️ Downloading</h3>
@@ -894,22 +725,14 @@
     </div>
 
     <script>
-        // ═══════════ CONFIG ═══════════
         const API = 'https://moviecloud-api.onrender.com';
-        let streams = [],
-            movie = null,
-            dc = null,
-            dqual = '480p',
-            activeQBtn = null;
+        let streams = [], movie = null, dc = null, dqual = '480p', activeQBtn = null;
         let dashPlayer = null;
         let allDashSources = [];
-        let currentDashIndex = -1;
         let searchTimeout = null;
 
-        // ═══════════ INIT ═══════════
         window.onload = () => {
             loadMovies('home');
-            // Header scroll effect
             window.addEventListener('scroll', () => {
                 const h = document.getElementById('header');
                 if (window.scrollY > 30) h.classList.add('scrolled');
@@ -917,7 +740,6 @@
             });
         };
 
-        // ═══════════ TOAST ═══════════
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
@@ -926,9 +748,8 @@
             setTimeout(() => t.remove(), 2700);
         }
 
-        // ═══════════ NAVIGATION ═══════════
         function setActiveBtn(id) {
-            ['btnHome', 'btnMovies', 'btnAnim'].forEach(b => {
+            ['btnHome','btnMovies','btnAnim'].forEach(b => {
                 const el = document.getElementById(b);
                 if (el) el.classList.remove('active');
             });
@@ -956,8 +777,7 @@
                     showItems(d.items || d);
                 }
             } catch (e) {
-                g.innerHTML =
-                    '<div class="empty-state"><span class="icon">⚠️</span>Error loading content.<br><small>Please check your connection and try again.</small></div>';
+                g.innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Error loading content.<br><small>Please check your connection.</small></div>';
                 console.error(e);
             }
         }
@@ -993,36 +813,31 @@
         function createCard(m) {
             const c = document.createElement('div');
             c.className = 'card';
-            // Download button on card
             const db = document.createElement('span');
             db.className = 'dbtn';
             db.textContent = '⬇';
             db.title = 'Download ' + (m.name || 'movie');
-            db.onclick = e => { e.stopPropagation();
-                startDL(m); };
+            db.onclick = e => { e.stopPropagation(); startDL(m); };
             c.appendChild(db);
-            // Clickable area
             const co = document.createElement('div');
             co.onclick = () => playMovie(m);
             const ratingHtml = m.rating ? `<span class="star">⭐</span>${m.rating}` : '';
             const badgeClass = m.badge && m.badge.toLowerCase().includes('hd') ? 'badge gold' : 'badge';
             co.innerHTML = `
-            <img src="${m.poster_url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%2313131f%22 width=%22200%22 height=%22300%22/><text fill=%22%236b6b80%22 x=%22100%22 y=%22150%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2230%22>🎬</text></svg>'" loading="lazy" alt="${m.name || 'Movie poster'}">
-            <div class="info">
-              <div class="title">${m.name || 'Unknown'}</div>
-              <div class="meta">
-                ${m.year ? '<span>' + m.year + '</span>' : ''}
-                ${ratingHtml}
-              </div>
-              ${m.badge ? `<span class="${badgeClass}">${m.badge}</span>` : ''}
-            </div>`;
+                <img src="${m.poster_url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%2313131f%22 width=%22200%22 height=%22300%22/><text fill=%22%236b6b80%22 x=%22100%22 y=%22150%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2230%22>🎬</text></svg>'" loading="lazy" alt="${m.name || 'Movie poster'}">
+                <div class="info">
+                  <div class="title">${m.name || 'Unknown'}</div>
+                  <div class="meta">
+                    ${m.year ? '<span>' + m.year + '</span>' : ''}
+                    ${ratingHtml}
+                  </div>
+                  ${m.badge ? `<span class="${badgeClass}">${m.badge}</span>` : ''}
+                </div>`;
             c.appendChild(co);
             return c;
         }
 
-        // ═══════════ SEARCH ═══════════
         function handleSearchInput(val) {
-            // Debounced auto-search for better UX
             if (searchTimeout) clearTimeout(searchTimeout);
             if (val.trim().length >= 2) {
                 searchTimeout = setTimeout(() => searchMovies(val.trim()), 500);
@@ -1033,8 +848,7 @@
 
         async function searchMovies(q) {
             if (!q || q.trim().length === 0) { loadMovies('home'); return; }
-            document.getElementById('grid').innerHTML =
-                '<div class="loading-text"><div class="spinner"></div>Searching for "' + q + '"...</div>';
+            document.getElementById('grid').innerHTML = '<div class="loading-text"><div class="spinner"></div>Searching for "' + q + '"...</div>';
             setActiveBtn(null);
             try {
                 const r = await fetch(API + '/search?q=' + encodeURIComponent(q) + '&limit=60');
@@ -1044,29 +858,21 @@
                     showItems(items);
                     showToast(`Found ${items.length} results for "${q}"`);
                 } else {
-                    document.getElementById('grid').innerHTML =
-                        '<div class="empty-state"><span class="icon">🔍</span>No results for "<strong>' + q +
-                        '</strong>"<br><small>Try different keywords</small></div>';
+                    document.getElementById('grid').innerHTML = '<div class="empty-state"><span class="icon">🔍</span>No results for "<strong>' + q + '</strong>"<br><small>Try different keywords</small></div>';
                 }
             } catch (e) {
-                document.getElementById('grid').innerHTML =
-                    '<div class="empty-state"><span class="icon">⚠️</span>Search failed.<br><small>Please try again.</small></div>';
+                document.getElementById('grid').innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Search failed.<br><small>Please try again.</small></div>';
                 console.error(e);
             }
         }
 
-        // ═══════════ PLAYER ═══════════
         async function playMovie(m) {
-            if (!m.subject_id || !m.slug) {
-                showToast('⚠️ Cannot play this movie - missing data');
-                return;
-            }
+            if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot play this movie - missing data'); return; }
             movie = m;
             destroyDash();
             document.getElementById('playerModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
-            document.getElementById('qualityButtons').innerHTML =
-                '<span style="color:#999;font-size:13px;">Loading qualities...</span>';
+            document.getElementById('qualityButtons').innerHTML = '<span style="color:#999;font-size:13px;">Loading qualities...</span>';
             document.getElementById('movieDetails').innerHTML = '<span class="no-details">Loading movie details...</span>';
             document.getElementById('video').poster = m.poster_url || '';
             await fetchStreams(m.subject_id, m.slug);
@@ -1078,44 +884,46 @@
             try {
                 const r = await fetch(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`);
                 const d = await r.json();
-                console.log('📡 Stream response:', d);
+                console.log('📡 Full stream response:', d);
 
-                // Extract DASH sources only
-                const dashSources = d.dash || [];
-                // Also check if sources array has DASH format
-                const extraDash = (d.sources || []).filter(s =>
-                    s.format && s.format.toUpperCase() === 'DASH'
-                );
-                allDashSources = [...dashSources, ...extraDash];
+                // 1) Dedicated dash array
+                let dashFromArray = d.dash || [];
+                if (!Array.isArray(dashFromArray)) dashFromArray = [];
 
-                // Remove duplicates by URL
-                const seen = new Set();
-                allDashSources = allDashSources.filter(s => {
-                    if (seen.has(s.url)) return false;
-                    seen.add(s.url);
-                    return true;
+                // 2) Look inside d.sources for any DASH-like entries
+                const sources = d.sources || [];
+                const dashFromSources = sources.filter(s => {
+                    if (!s || !s.url) return false;
+                    const url = String(s.url).toLowerCase();
+                    const format = String(s.format || '').toLowerCase();
+                    return format.includes('dash') || url.endsWith('.mpd') || format.includes('mpd');
                 });
 
-                // Also look for direct DASH URL in response
-                if (allDashSources.length === 0 && d.dash_url) {
-                    allDashSources = [{ url: d.dash_url, resolutions: 'Auto' }];
-                }
-                if (allDashSources.length === 0 && d.manifest_url) {
-                    allDashSources = [{ url: d.manifest_url, resolutions: 'Auto' }];
-                }
+                // 3) Sometimes a single dash_url / manifest_url is provided
+                let dashFromField = [];
+                if (d.dash_url) dashFromField.push({ url: d.dash_url, resolutions: 'Auto' });
+                if (d.manifest_url && d.manifest_url !== d.dash_url) dashFromField.push({ url: d.manifest_url, resolutions: 'Auto' });
 
-                // ── Build movie details ──
+                // Merge all, deduplicate by URL
+                const seen = new Set();
+                allDashSources = [];
+                [...dashFromArray, ...dashFromSources, ...dashFromField].forEach(s => {
+                    if (s && s.url && !seen.has(s.url)) {
+                        seen.add(s.url);
+                        allDashSources.push(s);
+                    }
+                });
+
+                // Sort by quality rank (highest first)
+                allDashSources.sort((a, b) => getQualityRank(b.resolutions) - getQualityRank(a.resolutions));
+
                 buildMovieDetails(d, movie);
 
                 if (allDashSources.length === 0) {
-                    qb.innerHTML = '<span style="color:#e50914;font-size:13px;">❌ No DASH streams available</span>';
-                    md.innerHTML =
-                        '<span class="no-details">No playable streams found for this movie. The server may not have DASH sources ready.</span>';
+                    qb.innerHTML = '<span style="color:#e50914;font-size:13px;">❌ No DASH streams available for this movie</span>';
+                    md.innerHTML = '<span class="no-details">The server doesn’t provide a DASH manifest. Try another movie.</span>';
                     return;
                 }
-
-                // Sort DASH sources by quality (highest first)
-                allDashSources.sort((a, b) => getQualityRank(b.resolutions) - getQualityRank(a.resolutions));
 
                 // Render quality buttons
                 qb.innerHTML = '';
@@ -1128,11 +936,9 @@
                     qb.appendChild(btn);
                 });
 
-                // Auto-select best quality (index 0 after sorting)
+                // Auto-play the best quality (index 0)
                 const bestBtn = qb.querySelector('.dash-btn');
-                if (bestBtn) {
-                    switchToDash(0, bestBtn);
-                }
+                if (bestBtn) switchToDash(0, bestBtn);
 
             } catch (e) {
                 qb.innerHTML = '<span style="color:#e50914;font-size:13px;">❌ Failed to load streams</span>';
@@ -1143,7 +949,6 @@
 
         function buildMovieDetails(apiData, movieObj) {
             const md = document.getElementById('movieDetails');
-            // Gather all possible metadata
             const title = apiData.title || apiData.name || movieObj?.name || 'Unknown';
             const year = apiData.year || apiData.release_year || movieObj?.year || '';
             const rating = apiData.rating || apiData.vote_average || movieObj?.rating || '';
@@ -1152,11 +957,9 @@
             const cast = apiData.cast || apiData.actors || '';
             const duration = apiData.duration || apiData.runtime || '';
             const poster = movieObj?.poster_url || apiData.poster_url || '';
-            const backdrop = apiData.backdrop_url || apiData.backdrop || '';
             const badge = movieObj?.badge || apiData.badge || '';
             const director = apiData.director || '';
 
-            // Format genres
             let genreTags = '';
             if (Array.isArray(genres) && genres.length > 0) {
                 genreTags = genres.map(g => `<span class="detail-genre-tag">${g}</span>`).join('');
@@ -1164,53 +967,42 @@
                 genreTags = genres.split(',').map(g => `<span class="detail-genre-tag">${g.trim()}</span>`).join('');
             }
 
-            // Format cast
             let castHtml = '';
             if (Array.isArray(cast) && cast.length > 0) {
-                castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast.slice(0, 8).join(', ') +
-                    (cast.length > 8 ? ' & more' : '') + '</div>';
+                castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast.slice(0, 8).join(', ') + (cast.length > 8 ? ' & more' : '') + '</div>';
             } else if (typeof cast === 'string' && cast.trim()) {
                 castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast + '</div>';
             }
 
-            // Format duration
-            const durationDisplay = duration ? (typeof duration === 'number' ? Math.floor(duration / 60) + 'h ' + (duration %
-                60) + 'm' : duration) : '';
+            const durationDisplay = duration ? (typeof duration === 'number' ? Math.floor(duration / 60) + 'h ' + (duration % 60) + 'm' : duration) : '';
 
             md.innerHTML = `
-            ${poster ? `<img src="${poster}" class="detail-poster" onerror="this.style.display='none'" alt="${title} poster">` : ''}
-            <div class="detail-info">
-              <h2 class="detail-title">${title}</h2>
-              <div class="detail-meta-row">
-                ${year ? `<span class="detail-meta-item">📅 ${year}</span>` : ''}
-                ${durationDisplay ? `<span class="detail-meta-item">⏱️ ${durationDisplay}</span>` : ''}
-                ${rating ? `<span class="detail-rating"><span class="star-icon">⭐</span> ${rating}</span>` : ''}
-                ${badge ? `<span class="detail-meta-item" style="background:rgba(229,9,20,0.15);padding:4px 10px;border-radius:20px;color:#e50914;font-weight:700;">🏷️ ${badge}</span>` : ''}
-                ${director ? `<span class="detail-meta-item">🎬 Dir: ${director}</span>` : ''}
-              </div>
-              ${genreTags ? `<div class="detail-genres">${genreTags}</div>` : ''}
-              ${description ? `<p class="detail-description">${description}</p>` : '<p class="no-details">No description available.</p>'}
-              ${castHtml}
-            </div>`;
+                ${poster ? `<img src="${poster}" class="detail-poster" onerror="this.style.display='none'" alt="${title} poster">` : ''}
+                <div class="detail-info">
+                  <h2 class="detail-title">${title}</h2>
+                  <div class="detail-meta-row">
+                    ${year ? `<span class="detail-meta-item">📅 ${year}</span>` : ''}
+                    ${durationDisplay ? `<span class="detail-meta-item">⏱️ ${durationDisplay}</span>` : ''}
+                    ${rating ? `<span class="detail-rating"><span class="star-icon">⭐</span> ${rating}</span>` : ''}
+                    ${badge ? `<span class="detail-meta-item" style="background:rgba(229,9,20,0.15);padding:4px 10px;border-radius:20px;color:#e50914;font-weight:700;">🏷️ ${badge}</span>` : ''}
+                    ${director ? `<span class="detail-meta-item">🎬 Dir: ${director}</span>` : ''}
+                  </div>
+                  ${genreTags ? `<div class="detail-genres">${genreTags}</div>` : ''}
+                  ${description ? `<p class="detail-description">${description}</p>` : '<p class="no-details">No description available.</p>'}
+                  ${castHtml}
+                </div>`;
         }
 
         function getQualityRank(res) {
             if (!res) return 0;
             const s = String(res).toLowerCase();
-            // Match resolution patterns
-            const match4k = s.match(/2160|4k|uhd/);
-            if (match4k) return 2160;
-            const match1080 = s.match(/1080|full\s*hd|fhd/);
-            if (match1080) return 1080;
-            const match720 = s.match(/720|hd/);
-            if (match720) return 720;
-            const match480 = s.match(/480|sd/);
-            if (match480) return 480;
-            const match360 = s.match(/360/);
-            if (match360) return 360;
-            const matchAny = s.match(/(\d+)p/);
-            if (matchAny) return parseInt(matchAny[1]);
-            // Fallback: "Auto" or "Best" gets high rank
+            if (s.match(/2160|4k|uhd/)) return 2160;
+            if (s.match(/1080|full\s*hd|fhd/)) return 1080;
+            if (s.match(/720|hd/)) return 720;
+            if (s.match(/480|sd/)) return 480;
+            if (s.match(/360/)) return 360;
+            const match = s.match(/(\d+)p/);
+            if (match) return parseInt(match[1]);
             if (s.includes('auto') || s.includes('best')) return 9999;
             return 0;
         }
@@ -1218,30 +1010,24 @@
         function switchToDash(index, btn) {
             destroyDash();
             if (activeQBtn) activeQBtn.classList.remove('active');
-            if (btn) { btn.classList.add('active');
-                activeQBtn = btn; }
-            currentDashIndex = index;
-
+            if (btn) { btn.classList.add('active'); activeQBtn = btn; }
             const v = document.getElementById('video');
-            if (allDashSources[index]) {
+            if (allDashSources[index] && allDashSources[index].url) {
                 const dashUrl = allDashSources[index].url;
-                console.log('▶️ Playing DASH [' + (allDashSources[index].resolutions || '?') + ']:', dashUrl);
+                console.log('▶️ Playing DASH: ' + (allDashSources[index].resolutions || '?') + ' | ' + dashUrl);
                 try {
                     dashPlayer = dashjs.MediaPlayer().create();
                     dashPlayer.initialize(v, dashUrl, true);
                     dashPlayer.setAutoPlay(true);
-                    // Set quality to highest available
                     dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
                         const bitrates = dashPlayer.getBitrateInfoListFor('video');
                         if (bitrates && bitrates.length > 0) {
-                            const highest = bitrates.reduce((max, b) =>
-                                b.bitrate > max.bitrate ? b : max, bitrates[0]);
+                            const highest = bitrates.reduce((max, b) => b.bitrate > max.bitrate ? b : max, bitrates[0]);
                             dashPlayer.setQualityFor('video', highest.qualityIndex);
                         }
                     });
                 } catch (e) {
                     console.error('DASH init error:', e);
-                    // Fallback: direct src
                     v.src = dashUrl;
                     v.load();
                     v.play().catch(() => {});
@@ -1258,10 +1044,8 @@
             v.pause();
             v.removeAttribute('src');
             v.load();
-            currentDashIndex = -1;
             allDashSources = [];
-            if (activeQBtn) { activeQBtn.classList.remove('active');
-                activeQBtn = null; }
+            if (activeQBtn) { activeQBtn.classList.remove('active'); activeQBtn = null; }
         }
 
         function closePlayer() {
@@ -1283,16 +1067,14 @@
             if (!movie) { showToast('⚠️ No movie loaded'); return; }
             document.getElementById('playerModal').style.display = 'none';
             document.body.style.overflow = '';
-            // Pause video but keep data
             const v = document.getElementById('video');
             v.pause();
-            // Pre-select best available quality for download
             if (allDashSources.length > 0 && allDashSources[0].resolutions) {
                 const bestRes = allDashSources[0].resolutions;
                 const dqSelect = document.getElementById('dq');
                 const options = dqSelect.options;
                 for (let i = 0; i < options.length; i++) {
-                    if (bestRes.includes(options[i].value) || options[i].value.includes(bestRes.replace('p', ''))) {
+                    if (bestRes.includes(options[i].value) || options[i].value.includes(bestRes.replace('p',''))) {
                         dqSelect.value = options[i].value;
                         dqual = options[i].value;
                         break;
@@ -1302,7 +1084,6 @@
             startDL(movie);
         }
 
-        // ═══════════ DOWNLOAD ═══════════
         function startDL(m) {
             if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot download this movie'); return; }
             movie = m;
@@ -1315,14 +1096,9 @@
         }
 
         async function dl(m) {
-            const f = document.getElementById('fill'),
-                s = document.getElementById('dstats'),
-                sp = document.getElementById('dspeed');
-            f.style.width = '0%';
-            s.textContent = 'Starting download...';
-            sp.textContent = '';
-            const url =
-                `${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=0&ep=0`;
+            const f = document.getElementById('fill'), s = document.getElementById('dstats'), sp = document.getElementById('dspeed');
+            f.style.width = '0%'; s.textContent = 'Starting download...'; sp.textContent = '';
+            const url = `${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=0&ep=0`;
             dc = new AbortController();
             try {
                 const r = await fetch(url, { signal: dc.signal });
@@ -1330,9 +1106,7 @@
                 const total = parseInt(r.headers.get('content-length')) || 0;
                 const reader = r.body.getReader();
                 const chunks = [];
-                let dlBytes = 0,
-                    lastTime = Date.now(),
-                    lastBytes = 0;
+                let dlBytes = 0, lastTime = Date.now(), lastBytes = 0;
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -1341,14 +1115,11 @@
                     const now = Date.now();
                     if (now - lastTime > 800) {
                         const speed = (dlBytes - lastBytes) / ((now - lastTime) / 1000);
-                        const pct = total ? (dlBytes / total) * 100 : Math.min((dlBytes / (500 * 1024 * 1024)) * 100, 95);
+                        const pct = total ? (dlBytes / total) * 100 : Math.min((dlBytes / (500*1024*1024))*100, 95);
                         f.style.width = Math.min(pct, 100) + '%';
-                        s.textContent = total ?
-                            `${(dlBytes/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)` :
-                            `${(dlBytes/(1024*1024)).toFixed(1)} MB downloaded`;
+                        s.textContent = total ? `${(dlBytes/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)` : `${(dlBytes/(1024*1024)).toFixed(1)} MB downloaded`;
                         sp.textContent = `⚡ ${(speed/(1024*1024)).toFixed(2)} MB/s`;
-                        lastTime = now;
-                        lastBytes = dlBytes;
+                        lastTime = now; lastBytes = dlBytes;
                     }
                 }
                 f.style.width = '100%';
@@ -1381,27 +1152,20 @@
             showToast('Download cancelled');
         }
 
-        // ═══════════ KEYBOARD SHORTCUTS ═══════════
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 const dmodal = document.getElementById('dmodal');
                 const pm = document.getElementById('playerModal');
-                if (dmodal.style.display === 'flex') {
-                    cancelDL();
-                } else if (pm.style.display === 'block') {
-                    closePlayer();
-                }
+                if (dmodal.style.display === 'flex') cancelDL();
+                else if (pm.style.display === 'block') closePlayer();
             }
-            // Space bar to toggle play/pause when player is open
             if (e.key === ' ' && document.getElementById('playerModal').style.display === 'block') {
                 const v = document.getElementById('video');
                 if (v && document.activeElement !== document.getElementById('search')) {
                     e.preventDefault();
-                    if (v.paused) v.play();
-                    else v.pause();
+                    v.paused ? v.play() : v.pause();
                 }
             }
-            // F for fullscreen
             if (e.key === 'f' && document.getElementById('playerModal').style.display === 'block') {
                 const v = document.getElementById('video');
                 if (v && document.activeElement !== document.getElementById('search')) {
@@ -1412,12 +1176,9 @@
             }
         });
 
-        // Close player on backdrop click
         document.getElementById('playerModal').addEventListener('click', function(e) {
             if (e.target === this) closePlayer();
         });
-
-        // Close download modal on backdrop click
         document.getElementById('dmodal').addEventListener('click', function(e) {
             if (e.target === this) cancelDL();
         });
