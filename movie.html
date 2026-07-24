@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YOURTV - Stream Premium Movies</title>
-    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js">
+    </script>
     <style>
         :root {
             --bg: #060609;
@@ -12,21 +13,17 @@
             --surface2: #13131f;
             --surface3: #1a1a2c;
             --accent: #e50914;
-            --accent2: #f5c518;
-            --gold: #d4a853;
+            --gold: #f5c518;
             --text: #e8e8ec;
             --text2: #a0a0b8;
             --text3: #6b6b80;
             --border: #1e1e32;
             --glow: rgba(229, 9, 20, 0.25);
-            --gold-glow: rgba(212, 168, 83, 0.2);
             --radius: 14px;
             --radius-sm: 10px;
-            --radius-lg: 20px;
             --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-
         * {
             margin: 0;
             padding: 0;
@@ -43,8 +40,7 @@
             min-height: 100vh;
             background-image:
                 radial-gradient(ellipse at 20% 10%, rgba(229, 9, 20, 0.04) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 5%, rgba(212, 168, 83, 0.03) 0%, transparent 60%),
-                radial-gradient(ellipse at 50% 50%, rgba(100, 100, 180, 0.02) 0%, transparent 70%);
+                radial-gradient(ellipse at 80% 5%, rgba(212, 168, 83, 0.03) 0%, transparent 60%);
             background-attachment: fixed;
         }
 
@@ -54,62 +50,50 @@
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
+            padding: 14px 22px;
             position: sticky;
             top: 0;
             z-index: 100;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
             transition: var(--transition);
         }
-        .header.scrolled {
-            padding: 10px 24px;
-            background: rgba(10, 10, 18, 0.95);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
-        }
-
         .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0;
         }
         .brand .logo-icon {
-            width: 42px;
-            height: 42px;
+            width: 38px;
+            height: 38px;
             background: linear-gradient(135deg, var(--accent), #c0030b);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 20px var(--glow);
-            animation: logoPulse 3s ease-in-out infinite;
-        }
-        @keyframes logoPulse {
-            0%, 100% { box-shadow: 0 4px 20px var(--glow); }
-            50% { box-shadow: 0 6px 32px rgba(229, 9, 20, 0.45); }
+            font-size: 20px;
+            box-shadow: 0 4px 18px var(--glow);
         }
         .brand h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
             color: #fff;
             white-space: nowrap;
         }
         .brand h1 span {
             color: var(--accent);
         }
-
         .home-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: var(--surface3);
             border: 2px solid var(--border);
@@ -118,44 +102,41 @@
             flex-shrink: 0;
             text-decoration: none;
             color: var(--text);
-            font-size: 18px;
-            position: relative;
+            font-size: 16px;
         }
         .home-btn:hover {
             background: var(--accent);
             border-color: var(--accent);
             color: #fff;
-            box-shadow: 0 6px 24px var(--glow);
+            box-shadow: 0 4px 18px var(--glow);
             transform: translateY(-2px);
         }
         .home-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             fill: currentColor;
         }
-
         .search-wrap {
             flex: 1;
-            min-width: 220px;
-            max-width: 520px;
+            min-width: 200px;
+            max-width: 480px;
             position: relative;
         }
         .search-wrap input {
             width: 100%;
-            padding: 13px 48px 13px 20px;
+            padding: 12px 44px 12px 18px;
             border-radius: 50px;
             border: 2px solid var(--border);
             background: var(--surface2);
             color: #fff;
-            font-size: 15px;
+            font-size: 14px;
             transition: var(--transition);
             font-family: var(--font);
-            letter-spacing: 0.2px;
         }
         .search-wrap input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.08);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.07);
             background: var(--surface3);
         }
         .search-wrap input::placeholder {
@@ -163,36 +144,30 @@
         }
         .search-wrap .search-icon {
             position: absolute;
-            right: 16px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text3);
             pointer-events: none;
-            font-size: 18px;
-            transition: var(--transition);
+            font-size: 16px;
         }
-        .search-wrap input:focus~.search-icon {
-            color: var(--accent);
-        }
-
         .nav {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: wrap;
             flex-shrink: 0;
         }
         .nav button {
-            padding: 10px 18px;
+            padding: 9px 16px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             border: 2px solid transparent;
             background: var(--surface3);
             color: var(--text2);
             transition: var(--transition);
             white-space: nowrap;
-            letter-spacing: 0.2px;
             font-family: var(--font);
         }
         .nav button:hover {
@@ -204,31 +179,50 @@
             background: var(--accent);
             color: #fff;
             border-color: var(--accent);
-            box-shadow: 0 4px 18px var(--glow);
+            box-shadow: 0 4px 16px var(--glow);
             font-weight: 700;
         }
-
         @media (max-width: 768px) {
-            .header { padding: 12px 14px; gap: 10px; }
-            .brand h1 { font-size: 18px; }
-            .brand .logo-icon { width: 34px; height: 34px; font-size: 17px; border-radius: 10px; }
-            .search-wrap { order: 3; flex: 1 1 100%; max-width: 100%; }
-            .nav button { padding: 8px 13px; font-size: 12px; }
+            .header {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            .brand h1 {
+                font-size: 17px;
+            }
+            .brand .logo-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+                border-radius: 8px;
+            }
+            .search-wrap {
+                order: 3;
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+            .nav button {
+                padding: 7px 11px;
+                font-size: 11px;
+            }
         }
 
         /* ── GRID ──────────────────────── */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-            gap: 20px;
-            padding: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 18px;
+            padding: 22px;
             max-width: 1500px;
             margin: 0 auto;
         }
         @media (max-width: 600px) {
-            .grid { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 14px; padding: 14px; }
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+                gap: 12px;
+                padding: 12px;
+            }
         }
-
         .card {
             background: var(--surface);
             border-radius: var(--radius);
@@ -236,27 +230,33 @@
             cursor: pointer;
             transition: var(--transition);
             position: relative;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+            border: 2px solid transparent;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             will-change: transform;
         }
         .card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-8px);
             border-color: var(--accent);
-            box-shadow: 0 18px 40px rgba(229, 9, 20, 0.2), 0 4px 16px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 16px 36px rgba(229, 9, 20, 0.18), 0 4px 12px rgba(0, 0, 0, 0.5);
             z-index: 5;
         }
-        .card:active { transform: scale(0.97); transition: 0.1s; }
+        .card:active {
+            transform: scale(0.96);
+            transition: 0.1s;
+        }
         .card img {
             width: 100%;
             aspect-ratio: 2/3;
             object-fit: cover;
             background: var(--surface2);
             display: block;
-            transition: var(--transition);
         }
-        .card:hover img { filter: brightness(1.1); }
-        .card .info { padding: 12px 14px; }
+        .card:hover img {
+            filter: brightness(1.08);
+        }
+        .card .info {
+            padding: 10px 12px;
+        }
         .card .title {
             font-size: 13px;
             font-weight: 700;
@@ -264,48 +264,60 @@
             overflow: hidden;
             text-overflow: ellipsis;
             color: #fff;
-            letter-spacing: 0.1px;
         }
-        .card .meta { font-size: 11px; color: var(--text2); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
-        .card .meta .star { color: var(--gold); font-size: 12px; }
+        .card .meta {
+            font-size: 11px;
+            color: var(--text2);
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .card .meta .star {
+            color: var(--gold);
+        }
         .card .badge {
             display: inline-block;
             background: linear-gradient(135deg, var(--accent), #c0030b);
             color: #fff;
-            padding: 3px 10px;
+            padding: 2px 9px;
             border-radius: 20px;
             font-size: 10px;
             font-weight: 700;
-            margin-top: 5px;
-            letter-spacing: 0.3px;
+            margin-top: 4px;
+            letter-spacing: 0.2px;
         }
-        .card .badge.gold { background: linear-gradient(135deg, var(--gold), #b8861e); }
+        .card .badge.gold {
+            background: linear-gradient(135deg, #d4a853, #b8861e);
+        }
         .dbtn {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: rgba(0,0,0,0.75);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(8px);
             color: #fff;
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 15px;
             opacity: 0;
-            transition: var(--transition);
+            transition: opacity 0.3s, transform 0.2s;
             cursor: pointer;
             z-index: 5;
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
-        .card:hover .dbtn { opacity: 1; }
+        .card:hover .dbtn {
+            opacity: 1;
+        }
         .dbtn:hover {
             background: var(--accent);
             border-color: var(--accent);
             transform: scale(1.1);
-            box-shadow: 0 4px 16px var(--glow);
+            box-shadow: 0 4px 14px var(--glow);
         }
 
         /* ── PLAYER MODAL ─────────────── */
@@ -316,32 +328,28 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.96);
+            background: rgba(0, 0, 0, 0.97);
             z-index: 1000;
             overflow-y: auto;
             overflow-x: hidden;
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .modal-content {
             width: 100%;
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
             background: #000;
             min-height: 100vh;
             position: relative;
-            animation: slideUp 0.35s ease;
         }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close {
             position: fixed;
-            top: 16px;
-            right: 16px;
-            background: rgba(0,0,0,0.8);
+            top: 14px;
+            right: 14px;
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             color: #fff;
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -349,14 +357,14 @@
             cursor: pointer;
             z-index: 1010;
             font-size: 22px;
-            border: 2px solid rgba(255,255,255,0.25);
+            border: 2px solid rgba(255, 255, 255, 0.25);
             transition: var(--transition);
             font-weight: 300;
         }
         .close:hover {
             background: var(--accent);
             border-color: var(--accent);
-            box-shadow: 0 6px 24px var(--glow);
+            box-shadow: 0 4px 20px var(--glow);
             transform: rotate(90deg);
         }
         .player-wrapper {
@@ -366,13 +374,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 55vh;
+            min-height: 50vh;
             max-height: 78vh;
         }
-        @media (min-width: 1200px) { .player-wrapper { min-height: 62vh; max-height: 82vh; } }
+        @media (min-width: 1200px) {
+            .player-wrapper {
+                min-height: 58vh;
+                max-height: 82vh;
+            }
+        }
         @media (max-width: 768px) {
-            .player-wrapper { min-height: 38vh; max-height: 55vh; }
-            .close { top: 8px; right: 8px; width: 36px; height: 36px; font-size: 18px; }
+            .player-wrapper {
+                min-height: 35vh;
+                max-height: 55vh;
+            }
+            .close {
+                top: 8px;
+                right: 8px;
+                width: 34px;
+                height: 34px;
+                font-size: 18px;
+            }
         }
         video {
             width: 100%;
@@ -381,8 +403,16 @@
             display: block;
             outline: none;
         }
-        @media (min-width: 1200px) { video { max-height: 82vh; } }
-        @media (max-width: 768px) { video { max-height: 55vh; } }
+        @media (min-width: 1200px) {
+            video {
+                max-height: 82vh;
+            }
+        }
+        @media (max-width: 768px) {
+            video {
+                max-height: 55vh;
+            }
+        }
 
         /* ── CONTROLS BAR ─────────────── */
         .controls-bar {
@@ -394,13 +424,10 @@
             align-items: center;
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 5;
         }
         .controls-bar .section-label {
             color: var(--text2);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -409,24 +436,23 @@
         .qbtn {
             background: var(--surface3);
             color: #fff;
-            padding: 8px 16px;
+            padding: 7px 15px;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             border: 2px solid transparent;
             transition: var(--transition);
             font-weight: 600;
             font-family: var(--font);
-            letter-spacing: 0.2px;
         }
         .qbtn:hover {
             background: var(--surface2);
             border-color: var(--border);
         }
         .qbtn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 4px 16px var(--glow);
+            background: #7c5cfc;
+            border-color: #a78bfa;
+            box-shadow: 0 4px 16px rgba(124, 92, 252, 0.35);
         }
         .qbtn.dash-btn {
             background: #5b3ec4;
@@ -436,12 +462,10 @@
         .qbtn.dash-btn:hover {
             background: #7c5cfc;
             border-color: #7c5cfc;
-            box-shadow: 0 4px 18px rgba(124,92,252,0.35);
         }
         .qbtn.dash-btn.active {
             background: #7c5cfc;
             border-color: #a78bfa;
-            box-shadow: 0 6px 24px rgba(124,92,252,0.45);
         }
         .dlbtn {
             background: #0d8a3e !important;
@@ -453,96 +477,124 @@
         .dlbtn:hover {
             background: #10a34a !important;
             border-color: #10a34a !important;
-            box-shadow: 0 4px 18px rgba(16,163,74,0.35) !important;
+            box-shadow: 0 4px 14px rgba(16, 163, 74, 0.3) !important;
         }
 
         /* ── MOVIE DETAILS SECTION ────── */
         .movie-details {
-            padding: 24px 28px 40px;
+            padding: 22px 26px 36px;
             background: linear-gradient(180deg, var(--surface) 0%, #000 100%);
             display: flex;
-            gap: 24px;
+            gap: 20px;
             flex-wrap: wrap;
         }
-        @media (max-width: 700px) { .movie-details { padding: 16px 14px 30px; gap: 16px; } }
+        @media (max-width: 700px) {
+            .movie-details {
+                padding: 14px 12px 24px;
+                gap: 14px;
+            }
+        }
         .movie-details .detail-poster {
-            width: 140px;
-            height: 210px;
+            width: 130px;
+            height: 195px;
             border-radius: var(--radius-sm);
             object-fit: cover;
             flex-shrink: 0;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
             border: 2px solid var(--border);
         }
-        @media (max-width: 700px) { .movie-details .detail-poster { width: 100px; height: 150px; border-radius: 8px; } }
-        .movie-details .detail-info { flex: 1; min-width: 240px; }
+        @media (max-width: 700px) {
+            .movie-details .detail-poster {
+                width: 95px;
+                height: 142px;
+                border-radius: 8px;
+            }
+        }
+        .movie-details .detail-info {
+            flex: 1;
+            min-width: 220px;
+        }
         .movie-details .detail-title {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.4px;
             color: #fff;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             line-height: 1.2;
         }
-        @media (max-width: 700px) { .movie-details .detail-title { font-size: 20px; } }
+        @media (max-width: 700px) {
+            .movie-details .detail-title {
+                font-size: 18px;
+            }
+        }
         .movie-details .detail-meta-row {
             display: flex;
-            gap: 14px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .movie-details .detail-meta-item {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text2);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
         .movie-details .detail-rating {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            background: rgba(245,197,24,0.12);
-            padding: 5px 12px;
+            gap: 4px;
+            background: rgba(245, 197, 24, 0.12);
+            padding: 4px 10px;
             border-radius: 20px;
             font-weight: 700;
             color: var(--gold);
-            font-size: 14px;
+            font-size: 13px;
         }
-        .movie-details .detail-rating .star-icon { font-size: 16px; }
+        .movie-details .detail-rating .star-icon {
+            font-size: 15px;
+        }
         .movie-details .detail-genres {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: wrap;
-            margin: 8px 0 12px;
+            margin: 6px 0 10px;
         }
         .movie-details .detail-genre-tag {
             background: var(--surface3);
             color: var(--text2);
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             border: 1px solid var(--border);
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
         .movie-details .detail-description {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text2);
-            line-height: 1.7;
+            line-height: 1.65;
             max-width: 700px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
         .movie-details .detail-cast {
-            margin-top: 12px;
-            font-size: 12px;
+            margin-top: 10px;
+            font-size: 11px;
             color: var(--text3);
             line-height: 1.5;
             max-width: 700px;
         }
-        .movie-details .detail-cast strong { color: var(--text2); font-weight: 600; }
-        .no-details { color: var(--text3); font-style: italic; padding: 10px 0; }
+        .movie-details .detail-cast strong {
+            color: var(--text2);
+            font-weight: 600;
+        }
+        .no-details {
+            color: var(--text3);
+            font-style: italic;
+            padding: 8px 0;
+            font-size: 13px;
+        }
 
         /* ── DOWNLOAD MODAL ───────────── */
         .dmodal {
@@ -552,41 +604,50 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.92);
             z-index: 2000;
             justify-content: center;
             align-items: center;
-            animation: fadeIn 0.25s ease;
         }
         .dbox {
             background: var(--surface);
-            padding: 36px 30px;
+            padding: 32px 26px;
             border-radius: var(--radius-lg);
             text-align: center;
-            min-width: 360px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            min-width: 340px;
+            border: 2px solid var(--border);
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7);
         }
-        @media (max-width: 600px) { .dbox { min-width: 280px; padding: 24px 18px; border-radius: var(--radius); } }
-        .dbox h3 { margin-bottom: 6px; font-size: 20px; font-weight: 700; }
+        @media (max-width: 600px) {
+            .dbox {
+                min-width: 270px;
+                padding: 22px 16px;
+                border-radius: var(--radius);
+            }
+        }
+        .dbox h3 {
+            margin-bottom: 5px;
+            font-size: 18px;
+            font-weight: 700;
+        }
         .dbox select {
-            padding: 10px 16px;
+            padding: 9px 14px;
             border-radius: 50px;
             background: var(--surface3);
             color: #fff;
             border: 2px solid var(--border);
-            margin: 12px 0;
-            font-size: 14px;
+            margin: 10px 0;
+            font-size: 13px;
             font-family: var(--font);
             cursor: pointer;
         }
         .bar {
             width: 100%;
-            height: 30px;
+            height: 26px;
             background: var(--surface3);
-            border-radius: 15px;
+            border-radius: 13px;
             overflow: hidden;
-            margin: 16px 0;
+            margin: 14px 0;
             border: 1px solid var(--border);
         }
         .fill {
@@ -594,55 +655,79 @@
             background: linear-gradient(90deg, #e50914, #ff4444, #e50914);
             background-size: 200% 100%;
             width: 0%;
-            transition: width 0.35s ease;
-            border-radius: 15px;
+            transition: width 0.3s ease;
+            border-radius: 13px;
             animation: shimmer 2s linear infinite;
         }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
         .dbox button {
-            padding: 10px 22px;
+            padding: 9px 20px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: 600;
             border: none;
             font-family: var(--font);
-            font-size: 14px;
+            font-size: 13px;
             transition: var(--transition);
         }
 
         /* ── LOADING ──────────────────── */
         .loading-text {
             text-align: center;
-            padding: 80px 20px;
+            padding: 70px 20px;
             color: var(--text3);
-            font-size: 16px;
+            font-size: 15px;
             grid-column: 1 / -1;
         }
         .spinner {
             display: inline-block;
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border: 3px solid var(--border);
             border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 55px 20px;
             color: var(--text3);
             grid-column: 1 / -1;
-            font-size: 15px;
+            font-size: 14px;
         }
-        .empty-state .icon { font-size: 50px; display: block; margin-bottom: 12px; }
+        .empty-state .icon {
+            font-size: 45px;
+            display: block;
+            margin-bottom: 10px;
+        }
 
         /* ── SCROLLBAR ────────────────── */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
 
         /* ── TOAST ────────────────────── */
         .toast {
@@ -652,21 +737,40 @@
             transform: translateX(-50%);
             background: var(--surface);
             color: #fff;
-            padding: 12px 24px;
+            padding: 10px 22px;
             border-radius: 50px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             z-index: 3000;
             border: 1px solid var(--border);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-            animation: toastIn 0.4s ease, toastOut 0.4s ease 2.2s forwards;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+            animation: toastIn 0.35s ease, toastOut 0.35s ease 2s forwards;
             pointer-events: none;
         }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(-15px); } }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-12px);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- ═══════════ HEADER ═══════════ -->
     <header class="header" id="header">
         <div class="brand">
             <div class="logo-icon">🎬</div>
@@ -686,10 +790,12 @@
         </nav>
     </header>
 
+    <!-- ═══════════ MOVIE GRID ═══════════ -->
     <div class="grid" id="grid">
         <div class="loading-text"><div class="spinner"></div>Loading movies...</div>
     </div>
 
+    <!-- ═══════════ PLAYER MODAL ═══════════ -->
     <div class="modal" id="playerModal">
         <div class="modal-content">
             <span class="close" onclick="closePlayer()" title="Close player">✕</span>
@@ -707,10 +813,11 @@
         </div>
     </div>
 
+    <!-- ═══════════ DOWNLOAD MODAL ═══════════ -->
     <div class="dmodal" id="dmodal">
         <div class="dbox">
-            <h3>⬇️ Downloading</h3>
-            <p id="dtitle" style="color:#ccc;margin:6px 0;"></p>
+            <h3>⬇️ Downloading Movie</h3>
+            <p id="dtitle" style="color:#ccc;margin:5px 0;"></p>
             <select id="dq" onchange="dqual=this.value">
                 <option value="360p">360p</option>
                 <option value="480p" selected>480p</option>
@@ -725,12 +832,18 @@
     </div>
 
     <script>
+        // ═══════════ CONFIG ═══════════
         const API = 'https://moviecloud-api.onrender.com';
-        let streams = [], movie = null, dc = null, dqual = '480p', activeQBtn = null;
+        let streams = [],
+            movie = null,
+            dc = null,
+            dqual = '480p',
+            activeQBtn = null;
         let dashPlayer = null;
         let allDashSources = [];
         let searchTimeout = null;
 
+        // ═══════════ INIT ═══════════
         window.onload = () => {
             loadMovies('home');
             window.addEventListener('scroll', () => {
@@ -740,16 +853,18 @@
             });
         };
 
+        // ═══════════ TOAST ═══════════
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
             t.textContent = msg;
             document.body.appendChild(t);
-            setTimeout(() => t.remove(), 2700);
+            setTimeout(() => t.remove(), 2500);
         }
 
+        // ═══════════ NAVIGATION ═══════════
         function setActiveBtn(id) {
-            ['btnHome','btnMovies','btnAnim'].forEach(b => {
+            ['btnHome', 'btnMovies', 'btnAnim'].forEach(b => {
                 const el = document.getElementById(b);
                 if (el) el.classList.remove('active');
             });
@@ -777,7 +892,8 @@
                     showItems(d.items || d);
                 }
             } catch (e) {
-                g.innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Error loading content.<br><small>Please check your connection.</small></div>';
+                g.innerHTML =
+                    '<div class="empty-state"><span class="icon">⚠️</span>Error loading content.<br><small>Check your connection.</small></div>';
                 console.error(e);
             }
         }
@@ -813,30 +929,34 @@
         function createCard(m) {
             const c = document.createElement('div');
             c.className = 'card';
+            // Download button
             const db = document.createElement('span');
             db.className = 'dbtn';
             db.textContent = '⬇';
             db.title = 'Download ' + (m.name || 'movie');
-            db.onclick = e => { e.stopPropagation(); startDL(m); };
+            db.onclick = e => { e.stopPropagation();
+                startDL(m); };
             c.appendChild(db);
+            // Clickable area
             const co = document.createElement('div');
             co.onclick = () => playMovie(m);
             const ratingHtml = m.rating ? `<span class="star">⭐</span>${m.rating}` : '';
             const badgeClass = m.badge && m.badge.toLowerCase().includes('hd') ? 'badge gold' : 'badge';
             co.innerHTML = `
-                <img src="${m.poster_url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%2313131f%22 width=%22200%22 height=%22300%22/><text fill=%22%236b6b80%22 x=%22100%22 y=%22150%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2230%22>🎬</text></svg>'" loading="lazy" alt="${m.name || 'Movie poster'}">
-                <div class="info">
-                  <div class="title">${m.name || 'Unknown'}</div>
-                  <div class="meta">
-                    ${m.year ? '<span>' + m.year + '</span>' : ''}
-                    ${ratingHtml}
-                  </div>
-                  ${m.badge ? `<span class="${badgeClass}">${m.badge}</span>` : ''}
-                </div>`;
+            <img src="${m.poster_url}" onerror="this.style.background='#13131f'" loading="lazy" alt="${m.name || 'Movie poster'}">
+            <div class="info">
+              <div class="title">${m.name || 'Unknown'}</div>
+              <div class="meta">
+                ${m.year ? '<span>' + m.year + '</span>' : ''}
+                ${ratingHtml}
+              </div>
+              ${m.badge ? `<span class="${badgeClass}">${m.badge}</span>` : ''}
+            </div>`;
             c.appendChild(co);
             return c;
         }
 
+        // ═══════════ SEARCH ═══════════
         function handleSearchInput(val) {
             if (searchTimeout) clearTimeout(searchTimeout);
             if (val.trim().length >= 2) {
@@ -848,7 +968,8 @@
 
         async function searchMovies(q) {
             if (!q || q.trim().length === 0) { loadMovies('home'); return; }
-            document.getElementById('grid').innerHTML = '<div class="loading-text"><div class="spinner"></div>Searching for "' + q + '"...</div>';
+            document.getElementById('grid').innerHTML =
+                '<div class="loading-text"><div class="spinner"></div>Searching for "' + q + '"...</div>';
             setActiveBtn(null);
             try {
                 const r = await fetch(API + '/search?q=' + encodeURIComponent(q) + '&limit=60');
@@ -858,22 +979,28 @@
                     showItems(items);
                     showToast(`Found ${items.length} results for "${q}"`);
                 } else {
-                    document.getElementById('grid').innerHTML = '<div class="empty-state"><span class="icon">🔍</span>No results for "<strong>' + q + '</strong>"<br><small>Try different keywords</small></div>';
+                    document.getElementById('grid').innerHTML =
+                        '<div class="empty-state"><span class="icon">🔍</span>No results for "<strong>' + q +
+                        '</strong>"</div>';
                 }
             } catch (e) {
-                document.getElementById('grid').innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Search failed.<br><small>Please try again.</small></div>';
+                document.getElementById('grid').innerHTML =
+                    '<div class="empty-state"><span class="icon">⚠️</span>Search failed.</div>';
                 console.error(e);
             }
         }
 
+        // ═══════════ PLAYER ═══════════
         async function playMovie(m) {
-            if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot play this movie - missing data'); return; }
+            if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot play this movie'); return; }
             movie = m;
             destroyDash();
             document.getElementById('playerModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
-            document.getElementById('qualityButtons').innerHTML = '<span style="color:#999;font-size:13px;">Loading qualities...</span>';
-            document.getElementById('movieDetails').innerHTML = '<span class="no-details">Loading movie details...</span>';
+            document.getElementById('qualityButtons').innerHTML =
+            '<span style="color:#999;font-size:12px;">Loading qualities...</span>';
+            document.getElementById('movieDetails').innerHTML =
+            '<span class="no-details">Loading movie details...</span>';
             document.getElementById('video').poster = m.poster_url || '';
             await fetchStreams(m.subject_id, m.slug);
         }
@@ -884,13 +1011,10 @@
             try {
                 const r = await fetch(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`);
                 const d = await r.json();
-                console.log('📡 Full stream response:', d);
+                console.log('📡 Stream data:', d);
 
-                // 1) Dedicated dash array
-                let dashFromArray = d.dash || [];
-                if (!Array.isArray(dashFromArray)) dashFromArray = [];
-
-                // 2) Look inside d.sources for any DASH-like entries
+                // ── Gather DASH sources (multiple possible locations) ──
+                const dashFromArray = d.dash || [];
                 const sources = d.sources || [];
                 const dashFromSources = sources.filter(s => {
                     if (!s || !s.url) return false;
@@ -898,13 +1022,12 @@
                     const format = String(s.format || '').toLowerCase();
                     return format.includes('dash') || url.endsWith('.mpd') || format.includes('mpd');
                 });
-
-                // 3) Sometimes a single dash_url / manifest_url is provided
-                let dashFromField = [];
+                const dashFromField = [];
                 if (d.dash_url) dashFromField.push({ url: d.dash_url, resolutions: 'Auto' });
-                if (d.manifest_url && d.manifest_url !== d.dash_url) dashFromField.push({ url: d.manifest_url, resolutions: 'Auto' });
+                if (d.manifest_url && d.manifest_url !== d.dash_url) dashFromField.push({ url: d.manifest_url,
+                    resolutions: 'Auto' });
 
-                // Merge all, deduplicate by URL
+                // Merge & deduplicate
                 const seen = new Set();
                 allDashSources = [];
                 [...dashFromArray, ...dashFromSources, ...dashFromField].forEach(s => {
@@ -914,18 +1037,21 @@
                     }
                 });
 
-                // Sort by quality rank (highest first)
+                // Sort by quality (highest first)
                 allDashSources.sort((a, b) => getQualityRank(b.resolutions) - getQualityRank(a.resolutions));
 
+                // Build movie details
                 buildMovieDetails(d, movie);
 
                 if (allDashSources.length === 0) {
-                    qb.innerHTML = '<span style="color:#e50914;font-size:13px;">❌ No DASH streams available for this movie</span>';
-                    md.innerHTML = '<span class="no-details">The server doesn’t provide a DASH manifest. Try another movie.</span>';
+                    qb.innerHTML =
+                        '<span style="color:#e50914;font-size:12px;">❌ No DASH streams available</span>';
+                    md.innerHTML =
+                    '<span class="no-details">This movie doesn't have a DASH stream. Try another.</span>';
                     return;
                 }
 
-                // Render quality buttons
+                // Render DASH quality buttons
                 qb.innerHTML = '';
                 allDashSources.forEach((s, i) => {
                     const btn = document.createElement('button');
@@ -936,13 +1062,13 @@
                     qb.appendChild(btn);
                 });
 
-                // Auto-play the best quality (index 0)
+                // Auto-play best DASH quality
                 const bestBtn = qb.querySelector('.dash-btn');
                 if (bestBtn) switchToDash(0, bestBtn);
 
             } catch (e) {
-                qb.innerHTML = '<span style="color:#e50914;font-size:13px;">❌ Failed to load streams</span>';
-                md.innerHTML = '<span class="no-details">Could not fetch stream data. Please try again.</span>';
+                qb.innerHTML = '<span style="color:#e50914;font-size:12px;">❌ Failed to load streams</span>';
+                md.innerHTML = '<span class="no-details">Could not fetch stream data.</span>';
                 console.error('Stream fetch error:', e);
             }
         }
@@ -969,28 +1095,30 @@
 
             let castHtml = '';
             if (Array.isArray(cast) && cast.length > 0) {
-                castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast.slice(0, 8).join(', ') + (cast.length > 8 ? ' & more' : '') + '</div>';
+                castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast.slice(0, 8).join(', ') + (cast.length >
+                    8 ? ' & more' : '') + '</div>';
             } else if (typeof cast === 'string' && cast.trim()) {
                 castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast + '</div>';
             }
 
-            const durationDisplay = duration ? (typeof duration === 'number' ? Math.floor(duration / 60) + 'h ' + (duration % 60) + 'm' : duration) : '';
+            const durationDisplay = duration ? (typeof duration === 'number' ? Math.floor(duration / 60) + 'h ' + (duration %
+                60) + 'm' : duration) : '';
 
             md.innerHTML = `
-                ${poster ? `<img src="${poster}" class="detail-poster" onerror="this.style.display='none'" alt="${title} poster">` : ''}
-                <div class="detail-info">
-                  <h2 class="detail-title">${title}</h2>
-                  <div class="detail-meta-row">
-                    ${year ? `<span class="detail-meta-item">📅 ${year}</span>` : ''}
-                    ${durationDisplay ? `<span class="detail-meta-item">⏱️ ${durationDisplay}</span>` : ''}
-                    ${rating ? `<span class="detail-rating"><span class="star-icon">⭐</span> ${rating}</span>` : ''}
-                    ${badge ? `<span class="detail-meta-item" style="background:rgba(229,9,20,0.15);padding:4px 10px;border-radius:20px;color:#e50914;font-weight:700;">🏷️ ${badge}</span>` : ''}
-                    ${director ? `<span class="detail-meta-item">🎬 Dir: ${director}</span>` : ''}
-                  </div>
-                  ${genreTags ? `<div class="detail-genres">${genreTags}</div>` : ''}
-                  ${description ? `<p class="detail-description">${description}</p>` : '<p class="no-details">No description available.</p>'}
-                  ${castHtml}
-                </div>`;
+            ${poster ? `<img src="${poster}" class="detail-poster" onerror="this.style.display='none'" alt="${title} poster">` : ''}
+            <div class="detail-info">
+              <h2 class="detail-title">${title}</h2>
+              <div class="detail-meta-row">
+                ${year ? `<span class="detail-meta-item">📅 ${year}</span>` : ''}
+                ${durationDisplay ? `<span class="detail-meta-item">⏱️ ${durationDisplay}</span>` : ''}
+                ${rating ? `<span class="detail-rating"><span class="star-icon">⭐</span> ${rating}</span>` : ''}
+                ${badge ? `<span class="detail-meta-item" style="background:rgba(229,9,20,0.15);padding:3px 9px;border-radius:20px;color:#e50914;font-weight:700;">🏷️ ${badge}</span>` : ''}
+                ${director ? `<span class="detail-meta-item">🎬 Dir: ${director}</span>` : ''}
+              </div>
+              ${genreTags ? `<div class="detail-genres">${genreTags}</div>` : ''}
+              ${description ? `<p class="detail-description">${description}</p>` : '<p class="no-details">No description available.</p>'}
+              ${castHtml}
+            </div>`;
         }
 
         function getQualityRank(res) {
@@ -1010,24 +1138,28 @@
         function switchToDash(index, btn) {
             destroyDash();
             if (activeQBtn) activeQBtn.classList.remove('active');
-            if (btn) { btn.classList.add('active'); activeQBtn = btn; }
+            if (btn) { btn.classList.add('active');
+                activeQBtn = btn; }
             const v = document.getElementById('video');
             if (allDashSources[index] && allDashSources[index].url) {
                 const dashUrl = allDashSources[index].url;
-                console.log('▶️ Playing DASH: ' + (allDashSources[index].resolutions || '?') + ' | ' + dashUrl);
+                console.log('▶️ Playing DASH [' + (allDashSources[index].resolutions || '?') + ']:', dashUrl);
                 try {
                     dashPlayer = dashjs.MediaPlayer().create();
                     dashPlayer.initialize(v, dashUrl, true);
                     dashPlayer.setAutoPlay(true);
+                    // Auto-select highest bitrate once initialized
                     dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
                         const bitrates = dashPlayer.getBitrateInfoListFor('video');
                         if (bitrates && bitrates.length > 0) {
-                            const highest = bitrates.reduce((max, b) => b.bitrate > max.bitrate ? b : max, bitrates[0]);
+                            const highest = bitrates.reduce((max, b) => b.bitrate > max.bitrate ? b :
+                                max, bitrates[0]);
                             dashPlayer.setQualityFor('video', highest.qualityIndex);
                         }
                     });
                 } catch (e) {
                     console.error('DASH init error:', e);
+                    // Fallback: direct src
                     v.src = dashUrl;
                     v.load();
                     v.play().catch(() => {});
@@ -1045,7 +1177,8 @@
             v.removeAttribute('src');
             v.load();
             allDashSources = [];
-            if (activeQBtn) { activeQBtn.classList.remove('active'); activeQBtn = null; }
+            if (activeQBtn) { activeQBtn.classList.remove('active');
+                activeQBtn = null; }
         }
 
         function closePlayer() {
@@ -1060,7 +1193,8 @@
             streams = [];
             movie = null;
             document.getElementById('qualityButtons').innerHTML = '';
-            document.getElementById('movieDetails').innerHTML = '<span class="no-details">Movie details will appear here.</span>';
+            document.getElementById('movieDetails').innerHTML =
+                '<span class="no-details">Movie details will appear here.</span>';
         }
 
         function triggerDownloadFromPlayer() {
@@ -1069,23 +1203,12 @@
             document.body.style.overflow = '';
             const v = document.getElementById('video');
             v.pause();
-            if (allDashSources.length > 0 && allDashSources[0].resolutions) {
-                const bestRes = allDashSources[0].resolutions;
-                const dqSelect = document.getElementById('dq');
-                const options = dqSelect.options;
-                for (let i = 0; i < options.length; i++) {
-                    if (bestRes.includes(options[i].value) || options[i].value.includes(bestRes.replace('p',''))) {
-                        dqSelect.value = options[i].value;
-                        dqual = options[i].value;
-                        break;
-                    }
-                }
-            }
             startDL(movie);
         }
 
+        // ═══════════ DOWNLOAD ═══════════
         function startDL(m) {
-            if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot download this movie'); return; }
+            if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot download'); return; }
             movie = m;
             document.getElementById('dmodal').style.display = 'flex';
             document.getElementById('dtitle').textContent = m.name || 'Movie';
@@ -1096,35 +1219,43 @@
         }
 
         async function dl(m) {
-            const f = document.getElementById('fill'), s = document.getElementById('dstats'), sp = document.getElementById('dspeed');
-            f.style.width = '0%'; s.textContent = 'Starting download...'; sp.textContent = '';
-            const url = `${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=0&ep=0`;
+            const f = document.getElementById('fill'),
+                s = document.getElementById('dstats'),
+                sp = document.getElementById('dspeed');
+            f.style.width = '0%';
+            s.textContent = 'Starting...';
+            sp.textContent = '';
+            const url =
+                `${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=0&ep=0`;
             dc = new AbortController();
             try {
                 const r = await fetch(url, { signal: dc.signal });
-                if (!r.ok) throw new Error('HTTP ' + r.status + ' - Server may not support this quality');
+                if (!r.ok) throw new Error('HTTP ' + r.status);
                 const total = parseInt(r.headers.get('content-length')) || 0;
                 const reader = r.body.getReader();
                 const chunks = [];
-                let dlBytes = 0, lastTime = Date.now(), lastBytes = 0;
+                let dlBytes = 0,
+                    lastTime = Date.now(),
+                    lastBytes = 0;
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
                     chunks.push(value);
                     dlBytes += value.length;
                     const now = Date.now();
-                    if (now - lastTime > 800) {
+                    if (now - lastTime > 1000) {
                         const speed = (dlBytes - lastBytes) / ((now - lastTime) / 1000);
-                        const pct = total ? (dlBytes / total) * 100 : Math.min((dlBytes / (500*1024*1024))*100, 95);
+                        const pct = total ? (dlBytes / total) * 100 : Math.min((dlBytes / (500 * 1024 * 1024)) *
+                            100, 95);
                         f.style.width = Math.min(pct, 100) + '%';
-                        s.textContent = total ? `${(dlBytes/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)` : `${(dlBytes/(1024*1024)).toFixed(1)} MB downloaded`;
+                        s.textContent = total ?
+                            `${(dlBytes/(1024*1024)).toFixed(1)} MB / ${(total/(1024*1024)).toFixed(1)} MB (${pct.toFixed(1)}%)` :
+                            `${(dlBytes/(1024*1024)).toFixed(1)} MB`;
                         sp.textContent = `⚡ ${(speed/(1024*1024)).toFixed(2)} MB/s`;
-                        lastTime = now; lastBytes = dlBytes;
+                        lastTime = now;
+                        lastBytes = dlBytes;
                     }
                 }
-                f.style.width = '100%';
-                s.textContent = '✅ Processing file...';
-                sp.textContent = '';
                 const blob = new Blob(chunks, { type: 'video/mp4' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
@@ -1134,9 +1265,9 @@
                 document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(a.href), 3000);
                 s.textContent = '✅ Download Complete!';
-                sp.textContent = '🎉 File saved to your device';
+                sp.textContent = '';
                 showToast('✅ Download complete!');
-                setTimeout(() => { document.getElementById('dmodal').style.display = 'none'; }, 2500);
+                setTimeout(() => { document.getElementById('dmodal').style.display = 'none'; }, 2000);
             } catch (e) {
                 if (e.name !== 'AbortError') {
                     showToast('❌ Download failed: ' + e.message);
@@ -1149,9 +1280,9 @@
         function cancelDL() {
             if (dc) dc.abort();
             document.getElementById('dmodal').style.display = 'none';
-            showToast('Download cancelled');
         }
 
+        // ═══════════ KEYBOARD SHORTCUTS ═══════════
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 const dmodal = document.getElementById('dmodal');
