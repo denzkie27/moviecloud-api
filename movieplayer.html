@@ -107,9 +107,6 @@
                 showError('No movie specified. Please provide a subject_id or id in the URL.<br><a href="movie.html" style="color:var(--accent);">Browse movies here</a>');
                 return;
             }
-            if (!slug) {
-                console.warn('⚠️ No slug provided – stream might fail.');
-            }
             movie = { subject_id, slug, name: 'Loading...' };
             buildPlayerUI();
             fetchMovieAndStreams(subject_id, slug);
@@ -145,64 +142,97 @@
             const qb = document.getElementById('qualityButtons');
             const md = document.getElementById('movieDetails');
             const note = document.getElementById('formatNote');
-            const url = `${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`;
-            console.log('🔗 Fetching streams:', url);
-            try {
-                const res = await fetch(url);
-                if (!res.ok) {
-                    const errText = await res.text();
-                    console.error('❌ API error:', res.status, errText);
-                    throw new Error(`Movie not found (${res.status}). Possibly incorrect subject_id or slug.`);
+
+            // Try different URL variations
+            const urlsToTry = [];
+            if (slug) {
+                urlsToTry.push(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`);
+            }
+            // Also try without the detail_path (some streams only need subject_id)
+            urlsToTry.push(`${API}/api/stream/${sid}?se=0&ep=0`);
+
+            let data = null;
+            let lastError = null;
+
+            for (const url of urlsToTry) {
+                console.log('🔗 Trying:', url);
+                try {
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        data = await res.json();
+                        break;
+                    } else {
+                        const errText = await res.text();
+                        lastError = `API error ${res.status}: ${errText}`;
+                        console.warn('⚠️ Failed:', url, lastError);
+                    }
+                } catch (e) {
+                    lastError = e.message;
                 }
-                const data = await res.json();
+            }
 
-                allStreams = [];
-                (data.dash || []).forEach(s => s && s.url && allStreams.push({ type:'dash', url:s.url, label:'🎬 DASH '+(s.resolutions||'Auto'), resolution:s.resolutions||'Auto' }));
-                (data.sources || []).forEach(s => {
-                    if(!s || !s.url) return;
-                    const fmt = (s.format||'').toLowerCase(), url = s.url.toLowerCase();
-                    if(fmt.includes('dash') || url.endsWith('.mpd')) return;
-                    let label = '🎥 MP4';
-                    if(fmt.includes('mpeg')||url.endsWith('.m3u8')) label='📡 HLS';
-                    else if(fmt.includes('webm')) label='🌐 WebM';
-                    allStreams.push({ type:'mp4', url:s.url, label:`${label} ${s.resolution||''}`.trim(), resolution:s.resolution||'?' });
-                });
-                if(data.dash_url && !allStreams.some(s=>s.url===data.dash_url)) allStreams.push({type:'dash', url:data.dash_url, label:'🎬 DASH (main)', resolution:'Auto'});
-                if(data.manifest_url && !allStreams.some(s=>s.url===data.manifest_url)) allStreams.push({type:'dash', url:data.manifest_url, label:'🎬 DASH (manifest)', resolution:'Auto'});
-                allStreams = allStreams.filter((v,i,a)=>a.findIndex(t=>t.url===v.url)===i);
+            if (!data) {
+                // Try to fetch movie details only (no stream) to at least show info
+                try {
+                    const infoRes = await fetch(`${API}/api/movie/${sid}`);
+                    if (infoRes.ok) {
+                        const infoData = await infoRes.json();
+                        buildMovieDetails(infoData, movie);
+                        qb.innerHTML = '<span style="color:#e50914;">❌ No streams available</span>';
+                        note.textContent = '⚠️ This movie cannot be streamed right now.';
+                        return;
+                    }
+                } catch (e) {}
 
-                movie.name = data.title || data.name || movie.name;
-                buildMovieDetails(data, movie);
-
-                if(allStreams.length===0) {
-                    qb.innerHTML = '<span style="color:#e50914;">❌ No streams available</span>';
-                    note.textContent = '⚠️ No playable sources found.';
-                    return;
-                }
-
-                allStreams.sort((a,b)=> (a.type==='dash'&&b.type!=='dash'?-1:(a.type!=='dash'&&b.type==='dash'?1:getResolutionRank(b.resolution)-getResolutionRank(a.resolution)) ));
-                qb.innerHTML = '';
-                allStreams.forEach((s,i)=>{
-                    const btn = document.createElement('button');
-                    btn.className = 'qbtn '+(s.type==='dash'?'dash-btn':'mp4-btn');
-                    btn.textContent = s.label;
-                    btn.title = s.type.toUpperCase()+': '+s.url;
-                    btn.onclick = ()=> selectStream(i, btn);
-                    qb.appendChild(btn);
-                });
-
-                const firstDash = allStreams.findIndex(s=>s.type==='dash');
-                if(firstDash!==-1){
-                    selectStream(firstDash, qb.querySelectorAll('.qbtn')[firstDash]);
-                    note.textContent = '✨ Auto-selected DASH quality.';
-                } else if(allStreams.length>0){
-                    selectStream(0, qb.querySelector('.qbtn'));
-                    note.textContent = '💡 No DASH – try another format.';
-                }
-            } catch(e) {
                 qb.innerHTML = '<span style="color:#e50914;">❌ Failed to load streams</span>';
-                note.textContent = '⚠️ ' + e.message;
-                console.error(e);
+                note.textContent = '⚠️ ' + (lastError || 'Unknown error');
+                md.innerHTML = '<span class="no-details">Could not fetch movie data. The movie might not be available.</span>';
+                return;
+            }
+
+            // Process streams
+            allStreams = [];
+            (data.dash || []).forEach(s => s && s.url && allStreams.push({ type:'dash', url:s.url, label:'🎬 DASH '+(s.resolutions||'Auto'), resolution:s.resolutions||'Auto' }));
+            (data.sources || []).forEach(s => {
+                if(!s || !s.url) return;
+                const fmt = (s.format||'').toLowerCase(), url = s.url.toLowerCase();
+                if(fmt.includes('dash') || url.endsWith('.mpd')) return;
+                let label = '🎥 MP4';
+                if(fmt.includes('mpeg')||url.endsWith('.m3u8')) label='📡 HLS';
+                else if(fmt.includes('webm')) label='🌐 WebM';
+                allStreams.push({ type:'mp4', url:s.url, label:`${label} ${s.resolution||''}`.trim(), resolution:s.resolution||'?' });
+            });
+            if(data.dash_url && !allStreams.some(s=>s.url===data.dash_url)) allStreams.push({type:'dash', url:data.dash_url, label:'🎬 DASH (main)', resolution:'Auto'});
+            if(data.manifest_url && !allStreams.some(s=>s.url===data.manifest_url)) allStreams.push({type:'dash', url:data.manifest_url, label:'🎬 DASH (manifest)', resolution:'Auto'});
+            allStreams = allStreams.filter((v,i,a)=>a.findIndex(t=>t.url===v.url)===i);
+
+            movie.name = data.title || data.name || movie.name;
+            buildMovieDetails(data, movie);
+
+            if(allStreams.length===0) {
+                qb.innerHTML = '<span style="color:#e50914;">❌ No streams available</span>';
+                note.textContent = '⚠️ No playable sources found.';
+                return;
+            }
+
+            allStreams.sort((a,b)=> (a.type==='dash'&&b.type!=='dash'?-1:(a.type!=='dash'&&b.type==='dash'?1:getResolutionRank(b.resolution)-getResolutionRank(a.resolution)) ));
+            qb.innerHTML = '';
+            allStreams.forEach((s,i)=>{
+                const btn = document.createElement('button');
+                btn.className = 'qbtn '+(s.type==='dash'?'dash-btn':'mp4-btn');
+                btn.textContent = s.label;
+                btn.title = s.type.toUpperCase()+': '+s.url;
+                btn.onclick = ()=> selectStream(i, btn);
+                qb.appendChild(btn);
+            });
+
+            const firstDash = allStreams.findIndex(s=>s.type==='dash');
+            if(firstDash!==-1){
+                selectStream(firstDash, qb.querySelectorAll('.qbtn')[firstDash]);
+                note.textContent = '✨ Auto-selected DASH quality.';
+            } else if(allStreams.length>0){
+                selectStream(0, qb.querySelector('.qbtn'));
+                note.textContent = '💡 No DASH – try another format.';
             }
         }
 
