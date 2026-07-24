@@ -255,7 +255,10 @@
                 g.innerHTML = '<div class="empty-state"><span class="icon">📭</span>No movies found.</div>';
                 return;
             }
-            allItems.forEach(m => { if (m.poster_url) g.appendChild(createCard(m)); });
+            allItems.forEach(m => {
+                const card = createCard(m);
+                if (card) g.appendChild(card);
+            });
         }
 
         function showItems(items) {
@@ -265,14 +268,19 @@
                 g.innerHTML = '<div class="empty-state"><span class="icon">📭</span>No movies found.</div>';
                 return;
             }
-            items.forEach(m => { if (m.poster_url) g.appendChild(createCard(m)); });
+            items.forEach(m => {
+                const card = createCard(m);
+                if (card) g.appendChild(card);
+            });
         }
 
         function createCard(m) {
+            // 🚫 Skip movies without valid subject_id or slug
+            if (!m.subject_id || !m.slug) return null;
+
             const card = document.createElement('a');
             card.className = 'card';
-            // Redirect to player page on card click
-            card.href = `movieplayer.html?subject_id=${encodeURIComponent(m.subject_id)}&slug=${encodeURIComponent(m.slug || '')}`;
+            card.href = `movieplayer.html?subject_id=${encodeURIComponent(m.subject_id)}&slug=${encodeURIComponent(m.slug)}`;
             card.title = 'Watch ' + (m.name || 'movie');
 
             // Download button (stops navigation)
@@ -327,7 +335,7 @@
             }
         }
 
-        // ── Download logic (unchanged) ──
+        // ── Download logic ──
         function startDL(m) {
             if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot download'); return; }
             currentMovieDL = m;
@@ -388,7 +396,6 @@
             document.getElementById('dmodal').style.display = 'none';
         }
 
-        // Global escape for download modal
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape' && document.getElementById('dmodal').style.display === 'flex') {
                 cancelDL();
