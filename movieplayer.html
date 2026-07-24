@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOURTV - Movie Player</title>
+
+    <!-- Open Graph tags for social media sharing -->
+    <meta property="og:title" content="YOURTV - Movie Player">
+    <meta property="og:description" content="Watch your favorite movies on YOURTV.">
+    <meta property="og:image" content="https://yourtv.wapka.website/favicon.png">
+    <meta property="og:url" content="">
+    <meta property="og:type" content="website">
+
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <style>
+        :root {
+            --bg: #060609;
+            --surface: #0d0d14;
+            --surface2: #13131f;
+            --surface3: #1a1a2c;
+            --accent: #e50914;
+            --gold: #f5c518;
+            --text: #e8e8ec;
+            --text2: #a0a0b8;
+            --text3: #6b6b80;
+            --border: #1e1e32;
+            --glow: rgba(229, 9, 20, 0.25);
+            --radius: 14px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+        body{
+            background:var(--bg); color:var(--text);
+            font-family:var(--font); min-height:100vh;
+            display:flex; flex-direction:column;
+        }
+        /* ── HEADER ─────────────────────── */
+        .header{
+            background:rgba(13,13,22,0.95); backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px); border-bottom:1px solid var(--border);
+            padding:14px 22px; position:sticky; top:0; z-index:100;
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            box-shadow:0 4px 30px rgba(0,0,0,0.5);
+        }
+        .brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
+        .brand .logo-icon{
+            width:38px;height:38px; background:linear-gradient(135deg,var(--accent),#c0030b);
+            border-radius:10px; display:flex;align-items:center;justify-content:center;
+            font-size:20px; box-shadow:0 4px 18px var(--glow);
+        }
+        .brand h1{font-size:20px;font-weight:800;letter-spacing:-0.3px;color:#fff;white-space:nowrap}
+        .brand h1 span{color:var(--accent)}
+        .home-btn{
+            display:flex;align-items:center;justify-content:center; width:36px;height:36px;
+            border-radius:50%; background:var(--surface3); border:2px solid var(--border);
+            cursor:pointer; transition:var(--transition); flex-shrink:0;
+            text-decoration:none; color:var(--text); font-size:16px;
+        }
+        .home-btn:hover{
+            background:var(--accent); border-color:var(--accent); color:#fff;
+            box-shadow:0 4px 18px var(--glow); transform:translateY(-2px);
+        }
+        .home-btn svg{width:18px;height:18px;fill:currentColor}
+        /* ── PLAYER CONTAINER ─────────── */
+        .player-container{
+            flex:1; display:flex; flex-direction:column;
+            max-width:1300px; width:100%; margin:0 auto;
+        }
+        .video-wrapper{
+            position:relative; width:100%; background:#000;
+            display:flex; align-items:center; justify-content:center;
+            min-height:40vh; max-height:75vh;
+        }
+        @media(min-width:1200px){.video-wrapper{min-height:50vh;max-height:80vh}}
+        video{width:100%;max-height:75vh;background:#000;display:block;outline:none}
+        @media(min-width:1200px){video{max-height:80vh}}
+        /* ── CONTROLS ────────────────── */
+        .controls-bar{
+            padding:14px 20px; background:var(--surface);
+            display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+            border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+        }
+        .controls-bar .section-label{
+            color:var(--text2); font-size:11px; font-weight:700;
+            text-transform:uppercase; letter-spacing:1px; margin-right:4px;
+        }
+        .note{color:var(--gold); font-size:11px; font-style:italic; margin-right:8px;}
+        .qbtn{
+            background:var(--surface3); color:#fff; padding:7px 15px;
+            border-radius:50px; cursor:pointer; font-size:12px;
+            border:2px solid transparent; transition:var(--transition);
+            font-weight:600; font-family:var(--font);
+        }
+        .qbtn:hover{background:var(--surface2);border-color:var(--border)}
+        .qbtn.active{background:#7c5cfc;border-color:#a78bfa;box-shadow:0 4px 16px rgba(124,92,252,0.35)}
+        .qbtn.dash-btn{background:#5b3ec4;border-color:#5b3ec4;color:#fff}
+        .qbtn.dash-btn:hover{background:#7c5cfc;border-color:#7c5cfc}
+        .qbtn.dash-btn.active{background:#7c5cfc;border-color:#a78bfa}
+        .qbtn.mp4-btn{background:#1a5c7a;border-color:#1a5c7a}
+        .qbtn.mp4-btn:hover{background:#1e6b8f}
+        .dlbtn{
+            background:#0d8a3e!important; border-color:#0d8a3e!important;
+            font-weight:700!important; color:#fff!important; margin-left:auto;
+        }
+        .dlbtn:hover{
+            background:#10a34a!important; border-color:#10a34a!important;
+            box-shadow:0 4px 14px rgba(16,163,74,0.3)!important;
+        }
+        /* ── MOVIE DETAILS ───────────── */
+        .movie-details{
+            padding:22px 26px 36px;
+            background:linear-gradient(180deg, var(--surface) 0%, #000 100%);
+            display:flex; gap:20px; flex-wrap:wrap;
+        }
+        @media(max-width:700px){.movie-details{padding:14px 12px 24px;gap:14px}}
+        .movie-details .detail-poster{
+            width:130px;height:195px;border-radius:var(--radius);
+            object-fit:cover;flex-shrink:0;box-shadow:0 6px 24px rgba(0,0,0,0.6);
+            border:2px solid var(--border);
+        }
+        @media(max-width:700px){.movie-details .detail-poster{width:95px;height:142px;border-radius:8px}}
+        .movie-details .detail-info{flex:1;min-width:220px}
+        .movie-details .detail-title{
+            font-size:26px;font-weight:800;letter-spacing:-0.4px;
+            color:#fff;margin-bottom:5px;line-height:1.2;
+        }
+        @media(max-width:700px){.movie-details .detail-title{font-size:18px}}
+        .movie-details .detail-meta-row{
+            display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:8px;
+        }
+        .movie-details .detail-meta-item{
+            font-size:12px;color:var(--text2);display:flex;align-items:center;gap:3px;
+        }
+        .movie-details .detail-rating{
+            display:inline-flex;align-items:center;gap:4px;
+            background:rgba(245,197,24,0.12);padding:4px 10px;
+            border-radius:20px;font-weight:700;color:var(--gold);font-size:13px;
+        }
+        .movie-details .detail-rating .star-icon{font-size:15px}
+        .movie-details .detail-genres{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 10px}
+        .movie-details .detail-genre-tag{
+            background:var(--surface3);color:var(--text2);padding:4px 10px;
+            border-radius:20px;font-size:10px;font-weight:600;
+            border:1px solid var(--border);letter-spacing:0.2px;
+        }
+        .movie-details .detail-description{
+            font-size:13px;color:var(--text2);line-height:1.65;max-width:700px;margin-top:4px;
+        }
+        .movie-details .detail-cast{
+            margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5;max-width:700px;
+        }
+        .movie-details .detail-cast strong{color:var(--text2);font-weight:600}
+        .no-details{color:var(--text3);font-style:italic;padding:8px 0;font-size:13px}
+        /* ── ERROR STATE ─────────────── */
+        .error-container{
+            flex:1; display:flex; align-items:center; justify-content:center;
+            padding:30px; text-align:center; color:var(--text3);
+        }
+        .error-container .icon{font-size:60px;margin-bottom:15px}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+    </style>
+</head>
+<body>
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="header">
+        <div class="brand">
+            <div class="logo-icon">🎬</div>
+            <h1><span>YOUR</span>TV</h1>
+        </div>
+        <a href="https://yourtv.wapka.website" target="_blank" rel="noopener noreferrer" class="home-btn" title="Go to YOURTV Home">
+            <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
+        </a>
+        <span style="color:var(--text2);font-size:14px;margin-left:auto;">Movie Player</span>
+    </header>
+
+    <!-- ═══════════ PLAYER CONTENT ═══════════ -->
+    <div class="player-container" id="playerContainer">
+        <!-- Dynamic content inserted here -->
+    </div>
+
+    <script>
+        const API = 'https://moviecloud-api.onrender.com';
+        let movie = null;
+        let dashPlayer = null;
+        let allStreams = [];
+        let activeQBtn = null;
+
+        // ── Parse URL parameters ──
+        function getParams() {
+            const params = new URLSearchParams(window.location.search);
+            const subject_id = params.get('subject_id');
+            const slug = params.get('slug');
+            // Also accept 'id' as subject_id for easier linking
+            const idFallback = params.get('id');
+            return {
+                subject_id: subject_id || idFallback,
+                slug: slug || ''
+            };
+        }
+
+        // ── Initialize ──
+        document.addEventListener('DOMContentLoaded', () => {
+            const { subject_id, slug } = getParams();
+            if (!subject_id) {
+                showError('No movie specified. Please provide a valid subject_id or id in the URL.');
+                return;
+            }
+            // Basic movie object (details will be fetched from API)
+            movie = { subject_id, slug, name: 'Loading...' };
+            buildPlayerUI();
+            fetchMovieAndStreams(subject_id, slug);
+        });
+
+        function showError(message) {
+            const container = document.getElementById('playerContainer');
+            container.innerHTML = `
+                <div class="error-container">
+                    <div>
+                        <div class="icon">⚠️</div>
+                        <h2 style="color:var(--text);margin-bottom:10px;">Unable to load movie</h2>
+                        <p style="color:var(--text2);">${message}</p>
+                        <a href="https://yourtv.wapka.website" style="display:inline-block;margin-top:20px;color:var(--accent);text-decoration:none;">← Go to YOURTV Home</a>
+                    </div>
+                </div>`;
+        }
+
+        function buildPlayerUI() {
+            const container = document.getElementById('playerContainer');
+            container.innerHTML = `
+                <div class="video-wrapper">
+                    <video id="video" controls autoplay playsinline poster=""></video>
+                </div>
+                <div class="controls-bar">
+                    <span class="section-label">🎬 Quality</span>
+                    <span class="note" id="formatNote">💡 Select DASH quality for best streaming</span>
+                    <span id="qualityButtons" style="display:flex;gap:8px;flex-wrap:wrap;"></span>
+                    <button class="qbtn dlbtn" onclick="downloadMovie()">⬇ Download</button>
+                </div>
+                <div class="movie-details" id="movieDetails">
+                    <span class="no-details">Loading movie details...</span>
+                </div>
+            `;
+        }
+
+        async function fetchMovieAndStreams(subject_id, slug) {
+            const qb = document.getElementById('qualityButtons');
+            const md = document.getElementById('movieDetails');
+            const note = document.getElementById('formatNote');
+            try {
+                const res = await fetch(`${API}/api/stream/${subject_id}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`);
+                if (!res.ok) throw new Error('Movie not found or API error');
+                const data = await res.json();
+                console.log('📡 Stream data:', data);
+
+                // ── Gather all streams ──
+                allStreams = [];
+
+                const dashArray = data.dash || [];
+                dashArray.forEach(s => {
+                    if (s && s.url) {
+                        allStreams.push({
+                            type: 'dash',
+                            url: s.url,
+                            label: '🎬 DASH ' + (s.resolutions || 'Auto'),
+                            resolution: s.resolutions || 'Auto'
+                        });
+                    }
+                });
+
+                const sources = data.sources || [];
+                sources.forEach(s => {
+                    if (!s || !s.url) return;
+                    const format = (s.format || '').toLowerCase();
+                    const url = s.url.toLowerCase();
+                    if (format.includes('dash') || url.endsWith('.mpd')) return;
+                    let typeLabel = '🎥 MP4';
+                    if (format.includes('mpeg') || url.endsWith('.m3u8')) typeLabel = '📡 HLS';
+                    else if (format.includes('webm')) typeLabel = '🌐 WebM';
+                    else if (format.includes('ogg')) typeLabel = '🎵 OGG';
+                    allStreams.push({
+                        type: 'mp4',
+                        url: s.url,
+                        label: `${typeLabel} ${s.resolution || ''}`.trim(),
+                        resolution: s.resolution || '?'
+                    });
+                });
+
+                if (data.dash_url && !allStreams.some(s => s.url === data.dash_url)) {
+                    allStreams.push({ type: 'dash', url: data.dash_url, label: '🎬 DASH (main)', resolution: 'Auto' });
+                }
+                if (data.manifest_url && !allStreams.some(s => s.url === data.manifest_url)) {
+                    allStreams.push({ type: 'dash', url: data.manifest_url, label: '🎬 DASH (manifest)', resolution: 'Auto' });
+                }
+
+                allStreams = allStreams.filter((v,i,a)=>a.findIndex(t=>t.url===v.url)===i);
+
+                // Build movie details (we now have data)
+                movie.name = data.title || data.name || movie.name;
+                buildMovieDetails(data, movie);
+
+                if (allStreams.length === 0) {
+                    qb.innerHTML = '<span style="color:#e50914;">❌ No streams available</span>';
+                    note.textContent = '⚠️ No playable sources found.';
+                    return;
+                }
+
+                // Sort DASH first, then by resolution
+                allStreams.sort((a,b) => {
+                    if (a.type === 'dash' && b.type !== 'dash') return -1;
+                    if (a.type !== 'dash' && b.type === 'dash') return 1;
+                    return getResolutionRank(b.resolution) - getResolutionRank(a.resolution);
+                });
+
+                qb.innerHTML = '';
+                allStreams.forEach((stream, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'qbtn ' + (stream.type === 'dash' ? 'dash-btn' : 'mp4-btn');
+                    btn.textContent = stream.label;
+                    btn.title = stream.type.toUpperCase() + ': ' + stream.url;
+                    btn.onclick = () => selectStream(i, btn);
+                    qb.appendChild(btn);
+                });
+
+                const firstDashIndex = allStreams.findIndex(s => s.type === 'dash');
+                if (firstDashIndex !== -1) {
+                    const firstDashBtn = qb.querySelectorAll('.qbtn')[firstDashIndex];
+                    selectStream(firstDashIndex, firstDashBtn);
+                    note.textContent = '✨ Auto-selected DASH quality. You can switch below.';
+                } else if (allStreams.length > 0) {
+                    const firstBtn = qb.querySelector('.qbtn');
+                    selectStream(0, firstBtn);
+                    note.textContent = '💡 No DASH available – try MP4 or other formats.';
+                }
+
+            } catch (e) {
+                qb.innerHTML = '<span style="color:#e50914;">❌ Failed to load streams</span>';
+                note.textContent = '⚠️ Error fetching stream data.';
+                console.error(e);
+            }
+        }
+
+        function getResolutionRank(res) {
+            if (!res) return 0;
+            const s = String(res).toLowerCase();
+            if (s.match(/2160|4k|uhd/)) return 2160;
+            if (s.match(/1080|full\s*hd|fhd/)) return 1080;
+            if (s.match(/720|hd/)) return 720;
+            if (s.match(/480|sd/)) return 480;
+            if (s.match(/360/)) return 360;
+            const m = s.match(/(\d+)p/);
+            if (m) return parseInt(m[1]);
+            return 0;
+        }
+
+        function selectStream(index, btn) {
+            if (activeQBtn) activeQBtn.classList.remove('active');
+            if (btn) { btn.classList.add('active'); activeQBtn = btn; }
+
+            const stream = allStreams[index];
+            if (!stream) return;
+
+            const v = document.getElementById('video');
+            if (stream.type === 'dash') {
+                if (dashPlayer) {
+                    try { dashPlayer.destroy(); } catch(e) {}
+                    dashPlayer = null;
+                }
+                try {
+                    dashPlayer = dashjs.MediaPlayer().create();
+                    dashPlayer.initialize(v, stream.url, true);
+                    dashPlayer.setAutoPlay(true);
+                    dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
+                        const bitrates = dashPlayer.getBitrateInfoListFor('video');
+                        if (bitrates && bitrates.length) {
+                            const highest = bitrates.reduce((max, b) => b.bitrate > max.bitrate ? b : max, bitrates[0]);
+                            dashPlayer.setQualityFor('video', highest.qualityIndex);
+                        }
+                    });
+                } catch (e) {
+                    console.error('DASH init error:', e);
+                    v.src = stream.url;
+                    v.load();
+                    v.play().catch(()=>{});
+                }
+            } else {
+                if (dashPlayer) {
+                    try { dashPlayer.destroy(); } catch(e) {}
+                    dashPlayer = null;
+                }
+                v.src = stream.url;
+                v.load();
+                v.play().catch(e => console.log('Autoplay prevented'));
+            }
+        }
+
+        function buildMovieDetails(apiData, movieObj) {
+            const md = document.getElementById('movieDetails');
+            if (!md) return;
+            const title = apiData.title || apiData.name || movieObj?.name || 'Unknown';
+            const year = apiData.year || apiData.release_year || movieObj?.year || '';
+            const rating = apiData.rating || apiData.vote_average || movieObj?.rating || '';
+            const desc = apiData.description || apiData.synopsis || apiData.overview || apiData.plot || '';
+            const genres = apiData.genres || apiData.genre || [];
+            const cast = apiData.cast || apiData.actors || '';
+            const duration = apiData.duration || apiData.runtime || '';
+            const poster = apiData.poster_url || '';
+            const badge = apiData.badge || '';
+            const director = apiData.director || '';
+
+            let genreTags = '';
+            if (Array.isArray(genres) && genres.length) {
+                genreTags = genres.map(g => `<span class="detail-genre-tag">${g}</span>`).join('');
+            } else if (typeof genres === 'string' && genres.trim()) {
+                genreTags = genres.split(',').map(g => `<span class="detail-genre-tag">${g.trim()}</span>`).join('');
+            }
+
+            let castHtml = '';
+            if (Array.isArray(cast) && cast.length) {
+                castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast.slice(0,8).join(', ') + (cast.length>8 ? ' & more' : '') + '</div>';
+            } else if (typeof cast === 'string' && cast.trim()) {
+                castHtml = '<div class="detail-cast"><strong>Cast:</strong> ' + cast + '</div>';
+            }
+
+            const durDisplay = duration ? (typeof duration === 'number' ? Math.floor(duration/60)+'h '+(duration%60)+'m' : duration) : '';
+
+            md.innerHTML = `
+                ${poster ? `<img src="${poster}" class="detail-poster" onerror="this.style.display='none'" alt="${title}">` : ''}
+                <div class="detail-info">
+                  <h2 class="detail-title">${title}</h2>
+                  <div class="detail-meta-row">
+                    ${year ? `<span class="detail-meta-item">📅 ${year}</span>` : ''}
+                    ${durDisplay ? `<span class="detail-meta-item">⏱️ ${durDisplay}</span>` : ''}
+                    ${rating ? `<span class="detail-rating"><span class="star-icon">⭐</span> ${rating}</span>` : ''}
+                    ${badge ? `<span class="detail-meta-item" style="background:rgba(229,9,20,0.15);padding:3px 9px;border-radius:20px;color:#e50914;font-weight:700;">🏷️ ${badge}</span>` : ''}
+                    ${director ? `<span class="detail-meta-item">🎬 Dir: ${director}</span>` : ''}
+                  </div>
+                  ${genreTags ? `<div class="detail-genres">${genreTags}</div>` : ''}
+                  ${desc ? `<p class="detail-description">${desc}</p>` : '<p class="no-details">No description available.</p>'}
+                  ${castHtml}
+                </div>`;
+        }
+
+        function downloadMovie() {
+            if (!movie || !movie.subject_id) return alert('No movie loaded.');
+            // Open download dialog? Could redirect to download endpoint.
+            // For simplicity, we can open a new tab with the download link.
+            const quality = prompt('Enter quality (360p, 480p, 720p, 1080p):', '480p');
+            if (quality) {
+                const url = `${API}/download/${movie.subject_id}?detail_path=${encodeURIComponent(movie.slug)}&quality=${quality}&se=0&ep=0`;
+                window.open(url, '_blank');
+            }
+        }
+
+        // Cleanup on page unload (good practice)
+        window.addEventListener('beforeunload', () => {
+            if (dashPlayer) {
+                try { dashPlayer.destroy(); } catch(e) {}
+            }
+        });
+    </script>
+</body>
+</html>
