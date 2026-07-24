@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YOURTV - Movie Player</title>
 
-    <!-- Open Graph tags for social media sharing -->
+    <!-- Open Graph / social sharing -->
     <meta property="og:title" content="YOURTV - Movie Player">
     <meta property="og:description" content="Watch your favorite movies on YOURTV.">
     <meta property="og:image" content="https://yourtv.wapka.website/favicon.png">
@@ -37,7 +37,7 @@
             font-family:var(--font); min-height:100vh;
             display:flex; flex-direction:column;
         }
-        /* ── HEADER ─────────────────────── */
+        /* HEADER */
         .header{
             background:rgba(13,13,22,0.95); backdrop-filter:blur(24px);
             -webkit-backdrop-filter:blur(24px); border-bottom:1px solid var(--border);
@@ -64,7 +64,12 @@
             box-shadow:0 4px 18px var(--glow); transform:translateY(-2px);
         }
         .home-btn svg{width:18px;height:18px;fill:currentColor}
-        /* ── PLAYER CONTAINER ─────────── */
+        .back-link{
+            color:var(--text2); text-decoration:none; font-size:13px;
+            margin-left:auto; transition:var(--transition);
+        }
+        .back-link:hover{color:#fff}
+        /* PLAYER CONTAINER */
         .player-container{
             flex:1; display:flex; flex-direction:column;
             max-width:1300px; width:100%; margin:0 auto;
@@ -77,7 +82,7 @@
         @media(min-width:1200px){.video-wrapper{min-height:50vh;max-height:80vh}}
         video{width:100%;max-height:75vh;background:#000;display:block;outline:none}
         @media(min-width:1200px){video{max-height:80vh}}
-        /* ── CONTROLS ────────────────── */
+        /* CONTROLS */
         .controls-bar{
             padding:14px 20px; background:var(--surface);
             display:flex; gap:10px; flex-wrap:wrap; align-items:center;
@@ -109,7 +114,7 @@
             background:#10a34a!important; border-color:#10a34a!important;
             box-shadow:0 4px 14px rgba(16,163,74,0.3)!important;
         }
-        /* ── MOVIE DETAILS ───────────── */
+        /* MOVIE DETAILS */
         .movie-details{
             padding:22px 26px 36px;
             background:linear-gradient(180deg, var(--surface) 0%, #000 100%);
@@ -154,7 +159,7 @@
         }
         .movie-details .detail-cast strong{color:var(--text2);font-weight:600}
         .no-details{color:var(--text3);font-style:italic;padding:8px 0;font-size:13px}
-        /* ── ERROR STATE ─────────────── */
+        /* ERROR STATE */
         .error-container{
             flex:1; display:flex; align-items:center; justify-content:center;
             padding:30px; text-align:center; color:var(--text3);
@@ -173,7 +178,7 @@
         <a href="https://yourtv.wapka.website" target="_blank" rel="noopener noreferrer" class="home-btn" title="Go to YOURTV Home">
             <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
         </a>
-        <span style="color:var(--text2);font-size:14px;margin-left:auto;">Movie Player</span>
+        <a href="movie.html" class="back-link" style="margin-left:auto;">← Back to Movies</a>
     </header>
 
     <!-- ═══════════ PLAYER CONTENT ═══════════ -->
@@ -188,27 +193,21 @@
         let allStreams = [];
         let activeQBtn = null;
 
-        // ── Parse URL parameters ──
+        // ── Extract parameters from URL ──
         function getParams() {
             const params = new URLSearchParams(window.location.search);
             const subject_id = params.get('subject_id');
-            const slug = params.get('slug');
-            // Also accept 'id' as subject_id for easier linking
-            const idFallback = params.get('id');
-            return {
-                subject_id: subject_id || idFallback,
-                slug: slug || ''
-            };
+            const slug = params.get('slug') || '';
+            return { subject_id, slug };
         }
 
         // ── Initialize ──
         document.addEventListener('DOMContentLoaded', () => {
             const { subject_id, slug } = getParams();
             if (!subject_id) {
-                showError('No movie specified. Please provide a valid subject_id or id in the URL.');
+                showError('No movie specified. Please provide a valid subject_id or id in the URL.<br><a href="movie.html" style="color:var(--accent);">Browse movies here</a>');
                 return;
             }
-            // Basic movie object (details will be fetched from API)
             movie = { subject_id, slug, name: 'Loading...' };
             buildPlayerUI();
             fetchMovieAndStreams(subject_id, slug);
@@ -222,7 +221,6 @@
                         <div class="icon">⚠️</div>
                         <h2 style="color:var(--text);margin-bottom:10px;">Unable to load movie</h2>
                         <p style="color:var(--text2);">${message}</p>
-                        <a href="https://yourtv.wapka.website" style="display:inline-block;margin-top:20px;color:var(--accent);text-decoration:none;">← Go to YOURTV Home</a>
                     </div>
                 </div>`;
         }
@@ -297,7 +295,7 @@
 
                 allStreams = allStreams.filter((v,i,a)=>a.findIndex(t=>t.url===v.url)===i);
 
-                // Build movie details (we now have data)
+                // Build movie details
                 movie.name = data.title || data.name || movie.name;
                 buildMovieDetails(data, movie);
 
@@ -445,8 +443,6 @@
 
         function downloadMovie() {
             if (!movie || !movie.subject_id) return alert('No movie loaded.');
-            // Open download dialog? Could redirect to download endpoint.
-            // For simplicity, we can open a new tab with the download link.
             const quality = prompt('Enter quality (360p, 480p, 720p, 1080p):', '480p');
             if (quality) {
                 const url = `${API}/download/${movie.subject_id}?detail_path=${encodeURIComponent(movie.slug)}&quality=${quality}&se=0&ep=0`;
@@ -454,7 +450,7 @@
             }
         }
 
-        // Cleanup on page unload (good practice)
+        // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             if (dashPlayer) {
                 try { dashPlayer.destroy(); } catch(e) {}
