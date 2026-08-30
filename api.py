@@ -1,7 +1,7 @@
 import re, json, httpx, logging, time
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -74,6 +74,7 @@ async def _get_stream_data(sid, slug, se=0, ep=0):
             logger.info("Returning cached stream data")
             return data, domain, ref
 
+    # Method 1: Get domain from API, then fetch stream
     try:
         dom = await _req(f"{API_BASE}/media-player/get-domain")
         domain = dom.get("data", "").rstrip("/") or "https://netfilm.world"
@@ -90,6 +91,7 @@ async def _get_stream_data(sid, slug, se=0, ep=0):
     except Exception as e:
         logger.error(f"Method 1 failed: {e}")
 
+    # Method 2: Try moviebox.ph domain
     try:
         domain = "https://moviebox.ph"
         ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
@@ -105,6 +107,7 @@ async def _get_stream_data(sid, slug, se=0, ep=0):
     except Exception as e:
         logger.error(f"Method 2 failed: {e}")
 
+    # Method 3: Try netfilm.world directly
     try:
         domain = "https://netfilm.world"
         ref = f"{domain}/spa/videoPlayPage/movies/{slug}?id={sid}&type=/movie/detail&detailSe={se}&detailEp={ep}&lang=en"
@@ -142,6 +145,7 @@ async def _get_episodes_list(sid: str, detail_path: str):
         logger.error(f"Error fetching episodes for {sid}: {e}")
         return []
 
+# ===== HTML PAGES =====
 @app.get("/movie.html")
 async def movie_page():
     return FileResponse("movie.html")
@@ -166,6 +170,7 @@ async def root():
 async def health():
     return {"status": "ok", "timestamp": time.time()}
 
+# ===== STREAM PROXY =====
 @app.get("/stream-proxy/{sid}")
 async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: int = 0, ep: int = 0):
     try:
@@ -219,6 +224,7 @@ async def stream_proxy(sid: str, detail_path: str, quality: str = "480p", se: in
         logger.error(f"Stream proxy error: {e}")
         raise HTTPException(500, str(e))
 
+# ===== DOWNLOAD =====
 @app.get("/download/{sid}")
 async def download(sid: str, detail_path: str, quality: str = "480p", se: int = 0, ep: int = 0):
     data, domain, ref = await _get_stream_data(sid, detail_path, se, ep)
@@ -249,6 +255,7 @@ async def download(sid: str, detail_path: str, quality: str = "480p", se: int = 
     return StreamingResponse(gen(), media_type="video/mp4",
                              headers={"Content-Disposition": f'attachment; filename="{fn}"'})
 
+# ===== EPISODES =====
 @app.get("/api/episodes/{sid}")
 async def episodes(sid: str, detail_path: str):
     eps = await _get_episodes_list(sid, detail_path)
@@ -257,6 +264,7 @@ async def episodes(sid: str, detail_path: str):
     else:
         return {"subject_id": sid, "detail_path": detail_path, "total": 0, "episodes": []}
 
+# ===== HOME API =====
 @app.get("/home")
 async def home():
     data = await _req(f"{API_BASE}/home?host=moviebox.ph")
@@ -284,6 +292,7 @@ async def home():
             sections.append({"section": title, "items": items})
     return {"status": "success", "sections": sections}
 
+# ===== CATEGORIES =====
 async def _cat(tab, page=1):
     data = await _req(f"{API_BASE}/subject/filter", "POST", {
         "tabId": tab,
@@ -315,6 +324,7 @@ async def tv_series(page: int = 1):
 async def animation(page: int = 1):
     return await _cat(8, page)
 
+# ===== SEARCH =====
 @app.get("/search")
 async def search(q: str = Query(default="", min_length=1), page: int = 1):
     data = await _req(f"{API_BASE}/subject/search", "POST", {
@@ -330,6 +340,7 @@ async def search(q: str = Query(default="", min_length=1), page: int = 1):
     } for s in raw]
     return {"query": q, "page": page, "items": items}
 
+# ===== STREAM INFO =====
 @app.get("/api/stream/{sid}")
 async def stream_info(sid: str, detail_path: str, se: int = 0, ep: int = 0):
     data, _, _ = await _get_stream_data(sid, detail_path, se, ep)
