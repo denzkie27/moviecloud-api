@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOURTV - Home</title>
+    <style>
+        :root {
+            --bg: #060609;
+            --surface: #0d0d14;
+            --surface2: #13131f;
+            --surface3: #1a1a2c;
+            --accent: #e50914;
+            --gold: #f5c518;
+            --text: #e8e8ec;
+            --text2: #a0a0b8;
+            --text3: #6b6b80;
+            --border: #1e1e32;
+            --glow: rgba(229, 9, 20, 0.25);
+            --radius: 14px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 10%, rgba(229,9,20,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 5%, rgba(212,168,83,0.03) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+        .header {
+            background: rgba(13,13,22,0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 22px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+        .brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .brand .logo-icon {
+            width: 38px; height: 38px; background: linear-gradient(135deg,var(--accent),#c0030b);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; box-shadow: 0 4px 18px var(--glow);
+        }
+        .brand h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; color: #fff; white-space: nowrap; }
+        .brand h1 span { color: var(--accent); }
+        .search-wrap { flex: 1; min-width: 200px; max-width: 480px; position: relative; }
+        .search-wrap input {
+            width: 100%; padding: 12px 44px 12px 18px; border-radius: 50px;
+            border: 2px solid var(--border); background: var(--surface2); color: #fff;
+            font-size: 14px; transition: var(--transition); font-family: var(--font);
+        }
+        .search-wrap input:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(229,9,20,0.07); background: var(--surface3);
+        }
+        .search-wrap input::placeholder { color: var(--text3); }
+        .search-wrap .search-icon {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text3); pointer-events: none; font-size: 16px;
+        }
+        .search-wrap input:focus ~ .search-icon { color: var(--accent); }
+        .nav { display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0; }
+        .nav button {
+            padding: 9px 16px; border-radius: 50px; cursor: pointer; font-weight: 600;
+            font-size: 12px; border: 2px solid transparent; background: var(--surface3);
+            color: var(--text2); transition: var(--transition); white-space: nowrap;
+            font-family: var(--font);
+        }
+        .nav button:hover { background: var(--surface2); color: #fff; border-color: var(--border); }
+        .nav button.active {
+            background: var(--accent); color: #fff; border-color: var(--accent);
+            box-shadow: 0 4px 16px var(--glow); font-weight: 700;
+        }
+        @media (max-width: 768px) {
+            .header { padding: 10px 12px; gap: 8px; }
+            .brand h1 { font-size: 17px; }
+            .brand .logo-icon { width: 32px; height: 32px; font-size: 16px; border-radius: 8px; }
+            .search-wrap { order: 3; flex: 1 1 100%; max-width: 100%; }
+            .nav button { padding: 7px 11px; font-size: 11px; }
+        }
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 18px; padding: 22px; max-width: 1500px; margin: 0 auto;
+        }
+        @media (max-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 12px; padding: 12px; } }
+        .card {
+            background: var(--surface); border-radius: var(--radius); overflow: hidden;
+            cursor: pointer; transition: var(--transition); position: relative;
+            border: 2px solid transparent; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            will-change: transform;
+        }
+        .card:hover {
+            transform: translateY(-8px); border-color: var(--accent);
+            box-shadow: 0 16px 36px rgba(229,9,20,0.18), 0 4px 12px rgba(0,0,0,0.5); z-index: 5;
+        }
+        .card:active { transform: scale(0.96); transition: 0.1s; }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: var(--surface2); display: block; }
+        .card:hover img { filter: brightness(1.08); }
+        .card .info { padding: 10px 12px; }
+        .card .title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+        .card .meta { font-size: 11px; color: var(--text2); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+        .card .meta .star { color: var(--gold); }
+        .card .badge { display: inline-block; background: linear-gradient(135deg,var(--accent),#c0030b); color: #fff; padding: 2px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-top: 4px; letter-spacing: 0.2px; }
+        .card .badge.gold { background: linear-gradient(135deg,#d4a853,#b8861e); }
+        .loading-text { text-align: center; padding: 70px 20px; color: var(--text3); font-size: 15px; grid-column: 1/-1; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 55px 20px; color: var(--text3); grid-column: 1/-1; font-size: 14px; }
+        .empty-state .icon { font-size: 45px; display: block; margin-bottom: 10px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--surface); color: #fff; padding: 10px 22px; border-radius: 50px; font-size: 13px; font-weight: 600; z-index: 3000; border: 1px solid var(--border); box-shadow: 0 6px 24px rgba(0,0,0,0.6); animation: toastIn 0.35s ease, toastOut 0.35s ease 2s forwards; pointer-events: none; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(18px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(-12px); } }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; } ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="brand">
+            <div class="logo-icon">🎬</div>
+            <h1><span>YOUR</span>TV</h1>
+        </div>
+        <div class="search-wrap">
+            <input type="text" id="search" placeholder="Search movies, TV shows..." onkeypress="if(event.key==='Enter')searchContent(this.value)" oninput="handleSearchInput(this.value)">
+            <span class="search-icon">🔍</span>
+        </div>
+        <nav class="nav">
+            <button onclick="switchTab('featured')" class="active" id="btnFeatured">🏠 Featured</button>
+            <button onclick="switchTab('movies')" id="btnMovies">🎥 Movies</button>
+            <button onclick="switchTab('tv')" id="btnTV">📺 TV Shows</button>
+            <button onclick="switchTab('animation')" id="btnAnim">✨ Animation</button>
+        </nav>
+    </header>
+
+    <div class="grid" id="grid">
+        <div class="loading-text"><div class="spinner"></div>Loading...</div>
+    </div>
+
+    <script>
+        const API = ''; // same origin
+        let currentTab = 'featured';
+        let searchTimeout = null;
+
+        window.addEventListener('load', () => switchTab('featured'));
+
+        function setActiveBtn(id) {
+            ['btnFeatured','btnMovies','btnTV','btnAnim'].forEach(b => {
+                const el = document.getElementById(b);
+                if (el) el.classList.remove('active');
+            });
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.add('active');
+        }
+
+        async function switchTab(tab) {
+            currentTab = tab;
+            setActiveBtn(tab === 'featured' ? 'btnFeatured' : tab === 'movies' ? 'btnMovies' : tab === 'tv' ? 'btnTV' : 'btnAnim');
+            const g = document.getElementById('grid');
+            g.innerHTML = '<div class="loading-text"><div class="spinner"></div>Loading...</div>';
+            try {
+                let data;
+                if (tab === 'featured') {
+                    const res = await fetch(API + '/home');
+                    data = await res.json();
+                    showFeatured(data);
+                } else if (tab === 'movies') {
+                    const res = await fetch(API + '/movies');
+                    data = await res.json();
+                    showItems(data.items || data);
+                } else if (tab === 'tv') {
+                    const res = await fetch(API + '/tv-series');
+                    data = await res.json();
+                    showItems(data.items || data);
+                } else {
+                    const res = await fetch(API + '/animation');
+                    data = await res.json();
+                    showItems(data.items || data);
+                }
+            } catch (e) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Error loading content.</div>';
+                console.error(e);
+            }
+        }
+
+        function showFeatured(d) {
+            const g = document.getElementById('grid');
+            g.innerHTML = '';
+            const allItems = [];
+            if (d.sections) {
+                d.sections.forEach(s => { if (s.items) s.items.forEach(m => allItems.push(m)); });
+            } else if (Array.isArray(d)) {
+                allItems.push(...d);
+            } else if (d.items) {
+                allItems.push(...d.items);
+            }
+            if (allItems.length === 0) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">📭</span>No content found.</div>';
+                return;
+            }
+            allItems.forEach(m => {
+                const card = createCard(m, 'featured');
+                if (card) g.appendChild(card);
+            });
+        }
+
+        function showItems(items) {
+            const g = document.getElementById('grid');
+            g.innerHTML = '';
+            if (!items || items.length === 0) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">📭</span>No content found.</div>';
+                return;
+            }
+            items.forEach(m => {
+                const card = createCard(m, currentTab);
+                if (card) g.appendChild(card);
+            });
+        }
+
+        function createCard(m, tabContext) {
+            if (!m.subject_id || !m.slug) return null;
+            const card = document.createElement('div');
+            card.className = 'card';
+            const ratingHtml = m.rating ? `<span class="star">⭐</span>${m.rating}` : '';
+            const badgeClass = m.badge && m.badge.toLowerCase().includes('hd') ? 'badge gold' : 'badge';
+            card.innerHTML = `
+                <img src="${m.poster_url}" onerror="this.style.background='#13131f'" loading="lazy" alt="${m.name || 'Poster'}">
+                <div class="info">
+                    <div class="title">${m.name || 'Unknown'}</div>
+                    <div class="meta">${m.year || ''} ${ratingHtml}</div>
+                    ${m.badge ? `<span class="${badgeClass}">${m.badge}</span>` : ''}
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                // Determine player based on tab or context
+                const isTV = tabContext === 'tv';
+                const target = isTV ? 'tvshow.html' : 'movieplayer.html';
+                window.location.href = `${target}?subject_id=${encodeURIComponent(m.subject_id)}&slug=${encodeURIComponent(m.slug)}`;
+            });
+            return card;
+        }
+
+        function handleSearchInput(val) {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            if (val.trim().length >= 2) {
+                searchTimeout = setTimeout(() => searchContent(val.trim()), 500);
+            } else if (val.trim().length === 0) {
+                switchTab('featured');
+            }
+        }
+
+        async function searchContent(q) {
+            if (!q) return;
+            const g = document.getElementById('grid');
+            g.innerHTML = '<div class="loading-text"><div class="spinner"></div>Searching...</div>';
+            try {
+                const res = await fetch(API + '/search?q=' + encodeURIComponent(q));
+                const data = await res.json();
+                const items = data.items || data;
+                if (items && items.length) {
+                    // For search results, we don't know if it's TV or movie. We'll try to detect using genre or other hints.
+                    // Simpler: ask user? But we can show a small icon. We'll use a heuristic: if the item has 'tv' in any field, treat as TV.
+                    // Better: Provide a click that goes to a generic player that auto-detects? Not available.
+                    // For now, we'll route to movieplayer.html (could be wrong for TV shows).
+                    // We can later improve by adding a "details" page.
+                    showSearchItems(items);
+                } else {
+                    g.innerHTML = '<div class="empty-state"><span class="icon">🔍</span>No results for "' + q + '"</div>';
+                }
+            } catch (e) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Search failed.</div>';
+            }
+        }
+
+        function showSearchItems(items) {
+            const g = document.getElementById('grid');
+            g.innerHTML = '';
+            items.forEach(m => {
+                // For search, we don't know if it's TV or movie. We'll add a small indicator and open a modal to choose.
+                // Alternative: navigate to a combined player page? Not built.
+                // We'll just route to movieplayer.html; if it's a TV show, the user will see the error and can go to TV section manually.
+                // Better: we can detect by checking if the slug contains "tv" or "series"? Not reliable.
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${m.poster_url}" onerror="this.style.background='#13131f'" loading="lazy" alt="${m.name || 'Poster'}">
+                    <div class="info">
+                        <div class="title">${m.name || 'Unknown'}</div>
+                        <div class="meta">${m.year || ''} ${m.rating ? '⭐' + m.rating : ''}</div>
+                    </div>
+                `;
+                card.addEventListener('click', () => {
+                    // Try to auto-detect: if name/slug contains common TV words, route to tvshow, else movieplayer.
+                    const text = (m.name + ' ' + m.slug).toLowerCase();
+                    const isLikelyTV = /tv|series|show|episode|season/.test(text);
+                    const target = isLikelyTV ? 'tvshow.html' : 'movieplayer.html';
+                    window.location.href = `${target}?subject_id=${encodeURIComponent(m.subject_id)}&slug=${encodeURIComponent(m.slug)}`;
+                });
+                g.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
