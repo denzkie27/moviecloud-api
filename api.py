@@ -142,9 +142,13 @@ async def tvshow_page():
 async def streaming_page():
     return FileResponse("streaming.html")
 
+@app.get("/home.html")
+async def home_page():
+    return FileResponse("home.html")
+
 @app.api_route("/", methods=["GET", "HEAD"])
 async def root():
-    return FileResponse("streaming.html")
+    return FileResponse("home.html")   # <-- now serves home.html as the default landing page
 
 @app.get("/health")
 async def health():
