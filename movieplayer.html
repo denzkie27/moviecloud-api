@@ -3,80 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YOURTV - Movie Player</title>
-    <meta property="og:title" content="YOURTV - Movie Player">
-    <meta property="og:description" content="Watch your favorite movies on YOURTV.">
-    <meta property="og:image" content="https://yourtv.wapka.website/favicon.png">
-    <meta property="og:url" content="">
-    <meta property="og:type" content="website">
-    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <title>YOURTV - Browse Movies</title>
     <style>
         :root {
-            --bg: #060609; --surface: #0d0d14; --surface2: #13131f; --surface3: #1a1a2c;
-            --accent: #e50914; --gold: #f5c518; --text: #e8e8ec; --text2: #a0a0b8;
-            --text3: #6b6b80; --border: #1e1e32; --glow: rgba(229,9,20,0.25);
-            --radius: 14px; --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+            --bg: #060609;
+            --surface: #0d0d14;
+            --surface2: #13131f;
+            --surface3: #1a1a2c;
+            --accent: #e50914;
+            --gold: #f5c518;
+            --text: #e8e8ec;
+            --text2: #a0a0b8;
+            --text3: #6b6b80;
+            --border: #1e1e32;
+            --glow: rgba(229, 9, 20, 0.25);
+            --radius: 14px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
         *{margin:0;padding:0;box-sizing:border-box}
         html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-        body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
+        body{
+            background:var(--bg); color:var(--text);
+            font-family:var(--font); min-height:100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 10%, rgba(229,9,20,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 5%, rgba(212,168,83,0.03) 0%, transparent 60%);
+            background-attachment:fixed;
+        }
         .header{
-            background:rgba(13,13,22,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-            border-bottom:1px solid var(--border);padding:14px 22px;position:sticky;top:0;z-index:100;
-            display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 4px 30px rgba(0,0,0,0.5);
+            background:rgba(13,13,22,0.85); backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px); border-bottom:1px solid var(--border);
+            padding:14px 22px; position:sticky; top:0; z-index:100;
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            box-shadow:0 4px 30px rgba(0,0,0,0.5);
         }
         .brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
-        .brand .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#c0030b);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 18px var(--glow)}
+        .brand .logo-icon{
+            width:38px;height:38px; background:linear-gradient(135deg,var(--accent),#c0030b);
+            border-radius:10px; display:flex;align-items:center;justify-content:center;
+            font-size:20px; box-shadow:0 4px 18px var(--glow);
+        }
         .brand h1{font-size:20px;font-weight:800;letter-spacing:-0.3px;color:#fff;white-space:nowrap}
         .brand h1 span{color:var(--accent)}
-        .home-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);cursor:pointer;transition:var(--transition);flex-shrink:0;text-decoration:none;color:var(--text);font-size:16px}
-        .home-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 18px var(--glow);transform:translateY(-2px)}
+        .home-btn{
+            display:flex;align-items:center;justify-content:center; width:36px;height:36px;
+            border-radius:50%; background:var(--surface3); border:2px solid var(--border);
+            cursor:pointer; transition:var(--transition); flex-shrink:0;
+            text-decoration:none; color:var(--text); font-size:16px;
+        }
+        .home-btn:hover{
+            background:var(--accent); border-color:var(--accent); color:#fff;
+            box-shadow:0 4px 18px var(--glow); transform:translateY(-2px);
+        }
         .home-btn svg{width:18px;height:18px;fill:currentColor}
-        .back-link{color:var(--text2);text-decoration:none;font-size:13px;margin-left:auto;transition:var(--transition)}
-        .back-link:hover{color:#fff}
-        .player-container{flex:1;display:flex;flex-direction:column;max-width:1300px;width:100%;margin:0 auto}
-        .video-wrapper{position:relative;width:100%;background:#000;display:flex;align-items:center;justify-content:center;min-height:40vh;max-height:75vh}
-        @media(min-width:1200px){.video-wrapper{min-height:50vh;max-height:80vh}}
-        video{width:100%;max-height:75vh;background:#000;display:block;outline:none}
-        @media(min-width:1200px){video{max-height:80vh}}
-        .controls-bar{padding:14px 20px;background:var(--surface);display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-        .section-label{color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-right:4px}
-        .note{color:var(--gold);font-size:11px;font-style:italic;margin-right:8px}
-        .qbtn{background:var(--surface3);color:#fff;padding:7px 15px;border-radius:50px;cursor:pointer;font-size:12px;border:2px solid transparent;transition:var(--transition);font-weight:600;font-family:var(--font)}
-        .qbtn:hover{background:var(--surface2);border-color:var(--border)}
-        .qbtn.active{background:#7c5cfc;border-color:#a78bfa;box-shadow:0 4px 16px rgba(124,92,252,0.35)}
-        .qbtn.dash-btn{background:#5b3ec4;border-color:#5b3ec4;color:#fff}
-        .qbtn.dash-btn:hover{background:#7c5cfc;border-color:#7c5cfc}
-        .qbtn.dash-btn.active{background:#7c5cfc;border-color:#a78bfa}
-        .qbtn.mp4-btn{background:#1a5c7a;border-color:#1a5c7a}
-        .qbtn.mp4-btn:hover{background:#1e6b8f}
-        .dlbtn{background:#0d8a3e!important;border-color:#0d8a3e!important;font-weight:700!important;color:#fff!important;margin-left:auto}
-        .dlbtn:hover{background:#10a34a!important;border-color:#10a34a!important;box-shadow:0 4px 14px rgba(16,163,74,0.3)!important}
-        .movie-details{padding:22px 26px 36px;background:linear-gradient(180deg,var(--surface) 0%,#000 100%);display:flex;gap:20px;flex-wrap:wrap}
-        @media(max-width:700px){.movie-details{padding:14px 12px 24px;gap:14px}}
-        .detail-poster{width:130px;height:195px;border-radius:var(--radius);object-fit:cover;flex-shrink:0;box-shadow:0 6px 24px rgba(0,0,0,0.6);border:2px solid var(--border)}
-        @media(max-width:700px){.detail-poster{width:95px;height:142px;border-radius:8px}}
-        .detail-info{flex:1;min-width:220px}
-        .detail-title{font-size:26px;font-weight:800;letter-spacing:-0.4px;color:#fff;margin-bottom:5px;line-height:1.2}
-        @media(max-width:700px){.detail-title{font-size:18px}}
-        .detail-meta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
-        .detail-meta-item{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:3px}
-        .detail-rating{display:inline-flex;align-items:center;gap:4px;background:rgba(245,197,24,0.12);padding:4px 10px;border-radius:20px;font-weight:700;color:var(--gold);font-size:13px}
-        .detail-rating .star-icon{font-size:15px}
-        .detail-genres{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 10px}
-        .detail-genre-tag{background:var(--surface3);color:var(--text2);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid var(--border);letter-spacing:0.2px}
-        .detail-description{font-size:13px;color:var(--text2);line-height:1.65;max-width:700px;margin-top:4px}
-        .detail-cast{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5;max-width:700px}
-        .detail-cast strong{color:var(--text2);font-weight:600}
-        .no-details{color:var(--text3);font-style:italic;padding:8px 0;font-size:13px}
-        .error-container{flex:1;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;color:var(--text3)}
-        .error-container .icon{font-size:60px;margin-bottom:15px}
+        .search-wrap{flex:1;min-width:200px;max-width:480px;position:relative}
+        .search-wrap input{
+            width:100%; padding:12px 44px 12px 18px; border-radius:50px;
+            border:2px solid var(--border); background:var(--surface2); color:#fff;
+            font-size:14px; transition:var(--transition); font-family:var(--font);
+        }
+        .search-wrap input:focus{
+            outline:none; border-color:var(--accent);
+            box-shadow:0 0 0 3px rgba(229,9,20,0.07); background:var(--surface3);
+        }
+        .search-wrap input::placeholder{color:var(--text3)}
+        .search-wrap .search-icon{
+            position:absolute; right:14px; top:50%; transform:translateY(-50%);
+            color:var(--text3); pointer-events:none; font-size:16px;
+        }
+        .search-wrap input:focus~.search-icon{color:var(--accent)}
+        .nav{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0}
+        .nav button{
+            padding:9px 16px; border-radius:50px; cursor:pointer; font-weight:600;
+            font-size:12px; border:2px solid transparent; background:var(--surface3);
+            color:var(--text2); transition:var(--transition); white-space:nowrap;
+            font-family:var(--font);
+        }
+        .nav button:hover{background:var(--surface2);color:#fff;border-color:var(--border)}
+        .nav button.active{
+            background:var(--accent); color:#fff; border-color:var(--accent);
+            box-shadow:0 4px 16px var(--glow); font-weight:700;
+        }
+        @media(max-width:768px){
+            .header{padding:10px 12px;gap:8px}
+            .brand h1{font-size:17px}
+            .brand .logo-icon{width:32px;height:32px;font-size:16px;border-radius:8px}
+            .search-wrap{order:3;flex:1 1 100%;max-width:100%}
+            .nav button{padding:7px 11px;font-size:11px}
+        }
+        .grid{
+            display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr));
+            gap:18px; padding:22px; max-width:1500px; margin:0 auto;
+        }
+        @media(max-width:600px){.grid{grid-template-columns:repeat(auto-fill, minmax(135px,1fr));gap:12px;padding:12px}}
+        .card{
+            background:var(--surface); border-radius:var(--radius); overflow:hidden;
+            cursor:pointer; transition:var(--transition); position:relative;
+            border:2px solid transparent; box-shadow:0 2px 10px rgba(0,0,0,0.3);
+            will-change:transform; display:block;
+        }
+        .card:hover{
+            transform:translateY(-8px); border-color:var(--accent);
+            box-shadow:0 16px 36px rgba(229,9,20,0.18),0 4px 12px rgba(0,0,0,0.5); z-index:5;
+        }
+        .card:active{transform:scale(0.96);transition:0.1s}
+        .card img{width:100%;aspect-ratio:2/3;object-fit:cover;background:var(--surface2);display:block}
+        .card:hover img{filter:brightness(1.08)}
+        .card .info{padding:10px 12px}
+        .card .title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+        .card .meta{font-size:11px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:5px}
+        .card .meta .star{color:var(--gold)}
+        .card .badge{display:inline-block;background:linear-gradient(135deg,var(--accent),#c0030b);color:#fff;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;margin-top:4px;letter-spacing:0.2px}
+        .card .badge.gold{background:linear-gradient(135deg,#d4a853,#b8861e)}
+        .dbtn{
+            position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.75);
+            backdrop-filter:blur(8px); color:#fff; width:34px; height:34px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:15px;
+            opacity:0; transition:opacity 0.3s,transform 0.2s; cursor:pointer; z-index:5;
+            border:2px solid rgba(255,255,255,0.2);
+        }
+        .card:hover .dbtn{opacity:1}
+        .dbtn:hover{background:var(--accent);border-color:var(--accent);transform:scale(1.1);box-shadow:0 4px 14px var(--glow)}
+        .loading-text{text-align:center;padding:70px 20px;color:var(--text3);font-size:15px;grid-column:1/-1}
+        .spinner{display:inline-block;width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:14px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty-state{text-align:center;padding:55px 20px;color:var(--text3);grid-column:1/-1;font-size:14px}
+        .empty-state .icon{font-size:45px;display:block;margin-bottom:10px}
+        .dmodal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:2000;justify-content:center;align-items:center}
+        .dbox{background:var(--surface);padding:32px 26px;border-radius:20px;text-align:center;min-width:340px;border:2px solid var(--border);box-shadow:0 18px 50px rgba(0,0,0,0.7)}
+        @media(max-width:600px){.dbox{min-width:270px;padding:22px 16px;border-radius:var(--radius)}}
+        .dbox h3{margin-bottom:5px;font-size:18px;font-weight:700}
+        .dbox select{padding:9px 14px;border-radius:50px;background:var(--surface3);color:#fff;border:2px solid var(--border);margin:10px 0;font-size:13px;font-family:var(--font);cursor:pointer}
+        .bar{width:100%;height:26px;background:var(--surface3);border-radius:13px;overflow:hidden;margin:14px 0;border:1px solid var(--border)}
+        .fill{height:100%;background:linear-gradient(90deg,#e50914,#ff4444,#e50914);background-size:200% 100%;width:0%;transition:width 0.3s ease;border-radius:13px;animation:shimmer 2s linear infinite}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        .dbox button{padding:9px 20px;border-radius:50px;cursor:pointer;font-weight:600;border:none;font-family:var(--font);font-size:13px;transition:var(--transition)}
         ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+        .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--surface);color:#fff;padding:10px 22px;border-radius:50px;font-size:13px;font-weight:600;z-index:3000;border:1px solid var(--border);box-shadow:0 6px 24px rgba(0,0,0,0.6);animation:toastIn 0.35s ease,toastOut 0.35s ease 2s forwards;pointer-events:none}
+        @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(18px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        @keyframes toastOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-12px)}}
     </style>
 </head>
 <body>
-    <header class="header">
+    <header class="header" id="header">
         <div class="brand">
             <div class="logo-icon">🎬</div>
             <h1><span>YOUR</span>TV</h1>
@@ -84,247 +154,253 @@
         <a href="https://yourtv.wapka.website" target="_blank" rel="noopener noreferrer" class="home-btn" title="Go to YOURTV Home">
             <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
         </a>
-        <a href="movie.html" class="back-link">← Back to Movies</a>
+        <div class="search-wrap">
+            <input type="text" id="search" placeholder="Search movies..." onkeypress="if(event.key==='Enter')searchMovies(this.value)" oninput="handleSearchInput(this.value)">
+            <span class="search-icon">🔍</span>
+        </div>
+        <nav class="nav">
+            <button onclick="loadMovies('home')" class="active" id="btnHome">🏠 Featured</button>
+            <button onclick="loadMovies('movies')" id="btnMovies">🎥 All Movies</button>
+            <button onclick="loadMovies('animation')" id="btnAnim">✨ Animation</button>
+        </nav>
     </header>
 
-    <div class="player-container" id="playerContainer"></div>
+    <div class="grid" id="grid"><div class="loading-text"><div class="spinner"></div>Loading movies...</div></div>
+
+    <div class="dmodal" id="dmodal">
+        <div class="dbox">
+            <h3>⬇️ Downloading Movie</h3>
+            <p id="dtitle" style="color:#ccc;"></p>
+            <select id="dq" onchange="dqual=this.value">
+                <option value="360p">360p</option>
+                <option value="480p" selected>480p</option>
+                <option value="720p">720p</option>
+                <option value="1080p">1080p</option>
+            </select>
+            <div class="bar"><div class="fill" id="fill"></div></div>
+            <p id="dstats" style="color:#999;">Preparing...</p>
+            <p id="dspeed" style="color:#999;"></p>
+            <button onclick="cancelDL()" style="background:#dc3545;color:#fff;margin-top:8px;">Cancel</button>
+        </div>
+    </div>
 
     <script>
-        const API = '';
-        let movie = null, dashPlayer = null, allStreams = [], activeQBtn = null;
+        const API = '';   // <-- CHANGED from 'https://moviecloud-api.onrender.com' to empty string (same origin)
+        let dc = null, dqual = '480p', currentMovieDL = null;
+        let searchTimeout = null;
 
-        function getParams() {
-            const p = new URLSearchParams(window.location.search);
-            return {
-                subject_id: p.get('subject_id') || p.get('id'),
-                slug: p.get('slug') || ''
-            };
+        window.addEventListener('load', () => loadMovies('home'));
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const { subject_id, slug } = getParams();
-            if (!subject_id) {
-                showError('No movie specified. Please provide a subject_id or id in the URL.<br><a href="movie.html" style="color:var(--accent);">Browse movies here</a>');
+        function setActiveBtn(id) {
+            ['btnHome','btnMovies','btnAnim'].forEach(b => {
+                const el = document.getElementById(b);
+                if (el) el.classList.remove('active');
+            });
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.add('active');
+        }
+
+        async function loadMovies(type) {
+            setActiveBtn(type === 'home' ? 'btnHome' : type === 'movies' ? 'btnMovies' : 'btnAnim');
+            const g = document.getElementById('grid');
+            g.innerHTML = '<div class="loading-text"><div class="spinner"></div>Loading movies...</div>';
+            try {
+                let data;
+                if (type === 'home') {
+                    const res = await fetch(API + '/home');
+                    data = await res.json();
+                    showMoviesFromSections(data);
+                } else if (type === 'movies') {
+                    const res = await fetch(API + '/movies');
+                    data = await res.json();
+                    showItems(data.items || data);
+                } else {
+                    const res = await fetch(API + '/animation');
+                    data = await res.json();
+                    showItems(data.items || data);
+                }
+            } catch (e) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Error loading. Check your connection.</div>';
+                console.error(e);
+            }
+        }
+
+        function showMoviesFromSections(d) {
+            const g = document.getElementById('grid');
+            g.innerHTML = '';
+            const allItems = [];
+            if (d.sections) {
+                d.sections.forEach(s => { if (s.items) s.items.forEach(m => allItems.push(m)); });
+            } else if (Array.isArray(d)) {
+                allItems.push(...d);
+            } else if (d.items) {
+                allItems.push(...d.items);
+            }
+            if (allItems.length === 0) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">📭</span>No movies found.</div>';
                 return;
             }
-            movie = { subject_id, slug, name: 'Loading...' };
-            buildPlayerUI();
-            fetchMovieAndStreams(subject_id, slug);
-        });
-
-        function showError(msg) {
-            document.getElementById('playerContainer').innerHTML = `
-                <div class="error-container">
-                    <div>
-                        <div class="icon">⚠️</div>
-                        <h2 style="color:var(--text);margin-bottom:10px;">Unable to load movie</h2>
-                        <p style="color:var(--text2);">${msg}</p>
-                    </div>
-                </div>`;
+            allItems.forEach(m => {
+                const card = createCard(m);
+                if (card) g.appendChild(card);
+            });
         }
 
-        function buildPlayerUI() {
-            document.getElementById('playerContainer').innerHTML = `
-                <div class="video-wrapper"><video id="video" controls autoplay playsinline poster=""></video></div>
-                <div class="controls-bar">
-                    <span class="section-label">🎬 Quality</span>
-                    <span class="note" id="formatNote">💡 Select DASH quality for best streaming</span>
-                    <span id="qualityButtons" style="display:flex;gap:8px;flex-wrap:wrap;"></span>
-                    <button class="qbtn dlbtn" onclick="downloadMovie()">⬇ Download</button>
-                </div>
-                <div class="movie-details" id="movieDetails">
-                    <span class="no-details">Loading movie details...</span>
+        function showItems(items) {
+            const g = document.getElementById('grid');
+            g.innerHTML = '';
+            if (!items || items.length === 0) {
+                g.innerHTML = '<div class="empty-state"><span class="icon">📭</span>No movies found.</div>';
+                return;
+            }
+            items.forEach(m => {
+                const card = createCard(m);
+                if (card) g.appendChild(card);
+            });
+        }
+
+        function createCard(m) {
+            // Only create card if movie has required fields
+            if (!m.subject_id || !m.slug) return null;
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.cursor = 'pointer';
+
+            // Build inner content first (without download button)
+            const ratingHtml = m.rating ? `<span class="star">⭐</span>${m.rating}` : '';
+            const badgeClass = m.badge && m.badge.toLowerCase().includes('hd') ? 'badge gold' : 'badge';
+            card.innerHTML = `
+                <img src="${m.poster_url}" onerror="this.style.background='#13131f'" loading="lazy" alt="${m.name || 'Movie poster'}">
+                <div class="info">
+                  <div class="title">${m.name || 'Unknown'}</div>
+                  <div class="meta">${m.year || ''} ${ratingHtml}</div>
+                  ${m.badge ? `<span class="${badgeClass}">${m.badge}</span>` : ''}
                 </div>
             `;
-        }
 
-        async function fetchMovieAndStreams(sid, slug) {
-            const qb = document.getElementById('qualityButtons');
-            const md = document.getElementById('movieDetails');
-            const note = document.getElementById('formatNote');
+            // Create download button and append after innerHTML (keeps listeners)
+            const dbtn = document.createElement('span');
+            dbtn.className = 'dbtn';
+            dbtn.textContent = '⬇';
+            dbtn.title = 'Download ' + (m.name || 'movie');
+            dbtn.onclick = (e) => {
+                e.stopPropagation();
+                startDL(m);
+            };
+            card.appendChild(dbtn);
 
-            // Try different URL variations
-            const urlsToTry = [];
-            if (slug) {
-                urlsToTry.push(`${API}/api/stream/${sid}?detail_path=${encodeURIComponent(slug)}&se=0&ep=0`);
-            }
-            // Also try without the detail_path (some streams only need subject_id)
-            urlsToTry.push(`${API}/api/stream/${sid}?se=0&ep=0`);
-
-            let data = null;
-            let lastError = null;
-
-            for (const url of urlsToTry) {
-                console.log('🔗 Trying:', url);
-                try {
-                    const res = await fetch(url);
-                    if (res.ok) {
-                        data = await res.json();
-                        break;
-                    } else {
-                        const errText = await res.text();
-                        lastError = `API error ${res.status}: ${errText}`;
-                        console.warn('⚠️ Failed:', url, lastError);
-                    }
-                } catch (e) {
-                    lastError = e.message;
-                }
-            }
-
-            if (!data) {
-                // Try to fetch movie details only (no stream) to at least show info
-                try {
-                    const infoRes = await fetch(`${API}/api/movie/${sid}`);
-                    if (infoRes.ok) {
-                        const infoData = await infoRes.json();
-                        buildMovieDetails(infoData, movie);
-                        qb.innerHTML = '<span style="color:#e50914;">❌ No streams available</span>';
-                        note.textContent = '⚠️ This movie cannot be streamed right now.';
-                        return;
-                    }
-                } catch (e) {}
-
-                qb.innerHTML = '<span style="color:#e50914;">❌ Failed to load streams</span>';
-                note.textContent = '⚠️ ' + (lastError || 'Unknown error');
-                md.innerHTML = '<span class="no-details">Could not fetch movie data. The movie might not be available.</span>';
-                return;
-            }
-
-            // Process streams
-            allStreams = [];
-            (data.dash || []).forEach(s => s && s.url && allStreams.push({ type:'dash', url:s.url, label:'🎬 DASH '+(s.resolutions||'Auto'), resolution:s.resolutions||'Auto' }));
-            (data.sources || []).forEach(s => {
-                if(!s || !s.url) return;
-                const fmt = (s.format||'').toLowerCase(), url = s.url.toLowerCase();
-                if(fmt.includes('dash') || url.endsWith('.mpd')) return;
-                let label = '🎥 MP4';
-                if(fmt.includes('mpeg')||url.endsWith('.m3u8')) label='📡 HLS';
-                else if(fmt.includes('webm')) label='🌐 WebM';
-                allStreams.push({ type:'mp4', url:s.url, label:`${label} ${s.resolution||''}`.trim(), resolution:s.resolution||'?' });
-            });
-            if(data.dash_url && !allStreams.some(s=>s.url===data.dash_url)) allStreams.push({type:'dash', url:data.dash_url, label:'🎬 DASH (main)', resolution:'Auto'});
-            if(data.manifest_url && !allStreams.some(s=>s.url===data.manifest_url)) allStreams.push({type:'dash', url:data.manifest_url, label:'🎬 DASH (manifest)', resolution:'Auto'});
-            allStreams = allStreams.filter((v,i,a)=>a.findIndex(t=>t.url===v.url)===i);
-
-            movie.name = data.title || data.name || movie.name;
-            buildMovieDetails(data, movie);
-
-            if(allStreams.length===0) {
-                qb.innerHTML = '<span style="color:#e50914;">❌ No streams available</span>';
-                note.textContent = '⚠️ No playable sources found.';
-                return;
-            }
-
-            allStreams.sort((a,b)=> (a.type==='dash'&&b.type!=='dash'?-1:(a.type!=='dash'&&b.type==='dash'?1:getResolutionRank(b.resolution)-getResolutionRank(a.resolution)) ));
-            qb.innerHTML = '';
-            allStreams.forEach((s,i)=>{
-                const btn = document.createElement('button');
-                btn.className = 'qbtn '+(s.type==='dash'?'dash-btn':'mp4-btn');
-                btn.textContent = s.label;
-                btn.title = s.type.toUpperCase()+': '+s.url;
-                btn.onclick = ()=> selectStream(i, btn);
-                qb.appendChild(btn);
+            // Explicit click handler for navigation (reliable)
+            card.addEventListener('click', (e) => {
+                // Only navigate if click was not on the download button
+                window.location.href = `movieplayer.html?subject_id=${encodeURIComponent(m.subject_id)}&slug=${encodeURIComponent(m.slug)}`;
             });
 
-            const firstDash = allStreams.findIndex(s=>s.type==='dash');
-            if(firstDash!==-1){
-                selectStream(firstDash, qb.querySelectorAll('.qbtn')[firstDash]);
-                note.textContent = '✨ Auto-selected DASH quality.';
-            } else if(allStreams.length>0){
-                selectStream(0, qb.querySelector('.qbtn'));
-                note.textContent = '💡 No DASH – try another format.';
+            return card;
+        }
+
+        function handleSearchInput(val) {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            if (val.trim().length >= 2) {
+                searchTimeout = setTimeout(() => searchMovies(val.trim()), 500);
+            } else if (val.trim().length === 0) {
+                loadMovies('home');
             }
         }
 
-        function getResolutionRank(res) {
-            if(!res) return 0;
-            const s = String(res).toLowerCase();
-            if(s.match(/2160|4k|uhd/)) return 2160;
-            if(s.match(/1080|full\s*hd|fhd/)) return 1080;
-            if(s.match(/720|hd/)) return 720;
-            if(s.match(/480|sd/)) return 480;
-            if(s.match(/360/)) return 360;
-            const m = s.match(/(\d+)p/);
-            return m ? parseInt(m[1]) : 0;
-        }
-
-        function selectStream(index, btn) {
-            if(activeQBtn) activeQBtn.classList.remove('active');
-            if(btn){ btn.classList.add('active'); activeQBtn = btn; }
-            const stream = allStreams[index];
-            if(!stream) return;
-            const v = document.getElementById('video');
-            if(stream.type==='dash'){
-                if(dashPlayer){ try{dashPlayer.destroy()}catch(e){} dashPlayer=null; }
-                try{
-                    dashPlayer = dashjs.MediaPlayer().create();
-                    dashPlayer.initialize(v, stream.url, true);
-                    dashPlayer.setAutoPlay(true);
-                    dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, ()=>{
-                        const bitrates = dashPlayer.getBitrateInfoListFor('video');
-                        if(bitrates && bitrates.length){
-                            const highest = bitrates.reduce((max,b)=>b.bitrate>max.bitrate?b:max, bitrates[0]);
-                            dashPlayer.setQualityFor('video', highest.qualityIndex);
-                        }
-                    });
-                }catch(e){
-                    v.src = stream.url; v.load(); v.play().catch(()=>{});
+        async function searchMovies(q) {
+            if (!q) return;
+            document.getElementById('grid').innerHTML = '<div class="loading-text"><div class="spinner"></div>Searching...</div>';
+            try {
+                const res = await fetch(API + '/search?q=' + encodeURIComponent(q) + '&limit=60');
+                const data = await res.json();
+                const items = data.items || data;
+                if (items && items.length) {
+                    showItems(items);
+                    showToast(`Found ${items.length} results for "${q}"`);
+                } else {
+                    document.getElementById('grid').innerHTML = '<div class="empty-state"><span class="icon">🔍</span>No results for "' + q + '"</div>';
                 }
-            } else {
-                if(dashPlayer){ try{dashPlayer.destroy()}catch(e){} dashPlayer=null; }
-                v.src = stream.url; v.load(); v.play().catch(()=>{});
+            } catch (e) {
+                document.getElementById('grid').innerHTML = '<div class="empty-state"><span class="icon">⚠️</span>Search failed.</div>';
             }
         }
 
-        function buildMovieDetails(apiData, movieObj) {
-            const md = document.getElementById('movieDetails');
-            if(!md) return;
-            const title = apiData.title || apiData.name || movieObj?.name || 'Unknown';
-            const year = apiData.year || apiData.release_year || movieObj?.year || '';
-            const rating = apiData.rating || apiData.vote_average || movieObj?.rating || '';
-            const desc = apiData.description || apiData.synopsis || apiData.overview || apiData.plot || '';
-            const genres = apiData.genres || apiData.genre || [];
-            const cast = apiData.cast || apiData.actors || '';
-            const duration = apiData.duration || apiData.runtime || '';
-            const poster = apiData.poster_url || '';
-            const badge = apiData.badge || '';
-            const director = apiData.director || '';
-
-            let genreTags = '';
-            if(Array.isArray(genres) && genres.length) genreTags = genres.map(g=>`<span class="detail-genre-tag">${g}</span>`).join('');
-            else if(typeof genres==='string' && genres.trim()) genreTags = genres.split(',').map(g=>`<span class="detail-genre-tag">${g.trim()}</span>`).join('');
-
-            let castHtml = '';
-            if(Array.isArray(cast) && cast.length) castHtml = '<div class="detail-cast"><strong>Cast:</strong> '+cast.slice(0,8).join(', ')+(cast.length>8?' & more':'')+'</div>';
-            else if(typeof cast==='string' && cast.trim()) castHtml = '<div class="detail-cast"><strong>Cast:</strong> '+cast+'</div>';
-
-            const durDisplay = duration ? (typeof duration==='number' ? Math.floor(duration/60)+'h '+(duration%60)+'m' : duration) : '';
-
-            md.innerHTML = `
-                ${poster ? `<img src="${poster}" class="detail-poster" onerror="this.style.display='none'" alt="${title}">` : ''}
-                <div class="detail-info">
-                  <h2 class="detail-title">${title}</h2>
-                  <div class="detail-meta-row">
-                    ${year ? `<span class="detail-meta-item">📅 ${year}</span>` : ''}
-                    ${durDisplay ? `<span class="detail-meta-item">⏱️ ${durDisplay}</span>` : ''}
-                    ${rating ? `<span class="detail-rating"><span class="star-icon">⭐</span> ${rating}</span>` : ''}
-                    ${badge ? `<span class="detail-meta-item" style="background:rgba(229,9,20,0.15);padding:3px 9px;border-radius:20px;color:#e50914;font-weight:700;">🏷️ ${badge}</span>` : ''}
-                    ${director ? `<span class="detail-meta-item">🎬 Dir: ${director}</span>` : ''}
-                  </div>
-                  ${genreTags ? `<div class="detail-genres">${genreTags}</div>` : ''}
-                  ${desc ? `<p class="detail-description">${desc}</p>` : '<p class="no-details">No description available.</p>'}
-                  ${castHtml}
-                </div>`;
+        function startDL(m) {
+            if (!m.subject_id || !m.slug) { showToast('⚠️ Cannot download'); return; }
+            currentMovieDL = m;
+            document.getElementById('dmodal').style.display = 'flex';
+            document.getElementById('dtitle').textContent = m.name || 'Movie';
+            document.getElementById('fill').style.width = '0%';
+            document.getElementById('dstats').textContent = 'Preparing...';
+            document.getElementById('dspeed').textContent = '';
+            dl(m);
         }
 
-        function downloadMovie() {
-            if(!movie || !movie.subject_id) return alert('No movie loaded.');
-            const quality = prompt('Enter quality (360p, 480p, 720p, 1080p):', '480p');
-            if(quality) window.open(`${API}/download/${movie.subject_id}?detail_path=${encodeURIComponent(movie.slug)}&quality=${quality}&se=0&ep=0`, '_blank');
+        async function dl(m) {
+            const f = document.getElementById('fill'), s = document.getElementById('dstats'), sp = document.getElementById('dspeed');
+            const url = `${API}/download/${m.subject_id}?detail_path=${encodeURIComponent(m.slug)}&quality=${dqual}&se=0&ep=0`;
+            dc = new AbortController();
+            try {
+                const res = await fetch(url, { signal: dc.signal });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const total = parseInt(res.headers.get('content-length')) || 0;
+                const reader = res.body.getReader();
+                const chunks = [];
+                let loaded = 0, lastTime = Date.now(), lastBytes = 0;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loaded += value.length;
+                    const now = Date.now();
+                    if (now - lastTime > 1000) {
+                        const speed = (loaded - lastBytes) / ((now - lastTime) / 1000);
+                        const pct = total ? (loaded / total) * 100 : Math.min((loaded/(500*1024*1024))*100, 95);
+                        f.style.width = Math.min(pct, 100) + '%';
+                        s.textContent = total ? `${(loaded/1048576).toFixed(1)} MB / ${(total/1048576).toFixed(1)} MB (${pct.toFixed(1)}%)` : `${(loaded/1048576).toFixed(1)} MB`;
+                        sp.textContent = `⚡ ${(speed/1048576).toFixed(2)} MB/s`;
+                        lastTime = now; lastBytes = loaded;
+                    }
+                }
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${(m.name || 'movie').replace(/[^a-z0-9]/gi,'_')}_${dqual}.mp4`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+                s.textContent = '✅ Download Complete!'; sp.textContent = '';
+                showToast('✅ Download complete!');
+                setTimeout(() => { document.getElementById('dmodal').style.display = 'none'; }, 2000);
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    showToast('❌ Download failed: ' + e.message);
+                    s.textContent = '❌ ' + e.message;
+                }
+                setTimeout(() => { document.getElementById('dmodal').style.display = 'none'; }, 2000);
+            }
         }
 
-        window.addEventListener('beforeunload', ()=>{
-            if(dashPlayer) try{dashPlayer.destroy()}catch(e){}
+        function cancelDL() {
+            if (dc) dc.abort();
+            document.getElementById('dmodal').style.display = 'none';
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && document.getElementById('dmodal').style.display === 'flex') {
+                cancelDL();
+            }
+        });
+        document.getElementById('dmodal').addEventListener('click', function(e) {
+            if (e.target === this) cancelDL();
         });
     </script>
 </body>
